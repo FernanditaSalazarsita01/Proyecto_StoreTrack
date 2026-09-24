@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}STORE TRACK | Nueva venta{% endblock %}
+
+{% block content %}
+
+<div class="panel">
+  <div class="ui-toolbar">
+    <div>
+      <h2 class="ui-title">Nueva venta</h2>
+      <div class="ui-sub">Captura cliente, agrega productos y registra la venta.</div>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+      <span class="muted">Fecha/Hora:</span>
+      <span class="money">{{ now_str or "" }}</span>
+    </div>
+  </div>
+
+  <div class="p-3">
+    <form method="POST" action="{{ url_for('sales.create_sale') }}" id="saleForm">
+
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-lg-6">
+          <div class="ui-card">
+            <h4>Cliente</h4>
+
+            <input class="form-control mb-2" type="text" name="customer_name" id="customer_name" placeholder="Nombre del cliente" required>
+            <input class="form-control mb-2" type="text" name="customer_phone" id="customer_phone" placeholder="Teléfono">
+            <textarea class="form-control" name="customer_address" id="customer_address" rows="2" placeholder="Dirección"></textarea>
+          </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+          <div class="ui-card">
+            <h4>Resumen</h4>
+
+            <div class="d-flex justify-content-between">
+              <span>Subtotal</span>
+              <strong id="subtotalLabel">$0.00</strong>
+            </div>
+
+            <hr>
+
+            <div class="d-flex justify-content-between">
+              <strong>TOTAL</strong>
+              <strong id="totalLabel">$0.00</strong>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 mt-3">
+              Registrar venta
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ui-card mb-3">
+        <h4>Agregar productos</h4>
+
+        <input class="form-control mb-2" id="productSearch" list="productsList" placeholder="Buscar producto por nombre o SKU">
+
+        <datalist id="productsList">
+          {% for p in products %}
+            <option
+              value="{{ (p.name or '') ~ ' (' ~ (p.sku or '') ~ ')' }}"
+              data-id="{{ p._id }}"
+              data-name="{{ p.name }}"
+              data-sku="{{ p.sku }}"
+              data-price="{{ p.price }}"
+              data-stock="{{ p.stock }}"
+              data-unit="{{ p.unit }}">
+            </option>
+          {% endfor %}
+        </datalist>
+
+        <div class="row mt-2">
+          <div class="col-4">
+            <input type="number" class="form-control" id="qtyInput" min="1" value="1">
+          </div>
+          <div class="col-8">
+            <button type="button" class="btn btn-primary w-100" onclick="addSelectedProduct()">
+              Agregar producto
+            </button>
+          </div>
+        </div>
+
+        <small id="productHint" class="text-muted">Selecciona un producto del listado.</small>
+      </div>
+
+      <div class="ui-card">
+        <h4>Detalle de venta</h4>
+
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>SKU</th>
+              <th>Precio</th>
+              <th>Cant.</th>
+              <th>Importe</th>
+              <th>Quitar</th>
+            </tr>
+          </thead>
+          <tbody id="cartBody">
+            <tr>
+              <td colspan="6" class="text-center text-muted">Aún no agregas productos.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <input type="hidden" name="items_json" id="items_json" value="[]">
+
+    </form>
+  </div>
+</div>
+
+<script>
+const byKey = new Map();
+let CART = [];
+
+function money(n) {
+  return `$${Number(n || 0).toFixed(2)}`;
+}
+
+function buildIndexFromDatalist() {
+  document.querySelectorAll("#productsList option").forEach(opt => {
+    const key = (opt.value || "").trim();
+
+    byKey.set(key, {
+      _id: String(opt.dataset.id || ""),
+      name: String(opt.dataset.name || ""),
+      sku: String(opt.dataset.sku || ""),
+      unit: String(opt.dataset.unit || ""),
+      price: Number(opt.dataset.price || 0),
+      stock: parseInt(opt.dataset.stock || "0", 10)
+    });
+  });
+}
+
+function findSelectedProduct() {
+  const val = (document.getElementById("productSearch").value || "").trim();
+
+  if (byKey.has(val)) return byKey.get(val);
+
+  const q = val.toLowerCase();
+
+  for (const [k, p] of byKey.entries()) {
+    if (k.toLowerCase().includes(q)) return p;
+  }
+
+  return null;
+}
+
+function addSelectedProduct() {
+  const p = findSelectedProduct();
+  const qty = parseInt(document.getElementById("qtyInput").value || "1", 10);
+  const hint = document.getElementById("productHint");
+
+  if (!p) {
+    hint.textContent = "Producto no encontrado.";
+    hint.className = "text-danger";
+    return;
+  }
+
+  if (qty <= 0) {
+    hint.textContent = "Cantidad inválida.";
+    hint.className = "text-danger";
+    return;
+  }
+
+  if (qty > p.stock) {
+    hint.textContent = `Stock insuficiente. Disponible: ${p.stock}`;
+    hint.className = "text-danger";
+    return;
+  }
+
+  const idx = CART.findIndex(x => x.product_id === p._id);
+
+  if (idx >= 0) {
+    CART[idx].qty += qty;
+  } else {
+    CART.push({
+      product_id: p._id,
+      name: p.name,
+      sku: p.sku,
+      price: p.price,
+      stock: p.stock,
+      qty: qty
+    });
+  }
+
+  document.getElementById("productSearch").value = "";
+  document.getElementById("qtyInput").value = 1;
+
+  hint.textContent = "Producto agregado ✅";
+  hint.className = "text-success";
+
+  renderCart();
+}
+
+function removeItem(product_id) {
+  CART = CART.filter(x => x.product_id !== product_id);
+  renderCart();
+}
+
+function renderCart() {
+  const body = document.getElementById("cartBody");
+
+  if (CART.length === 0) {
+    body.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Aún no agregas productos.</td></tr>`;
+    calcTotals();
+    return;
+  }
+
+  body.innerHTML = CART.map(it => `
+    <tr>
+      <td>${it.name}</td>
+      <td>${it.sku}</td>
+      <td>${money(it.price)}</td>
+      <td>${it.qty}</td>
+      <td>${money(it.price * it.qty)}</td>
+      <td>
+        <button type="button" class="btn btn-sm btn-danger" onclick="removeItem('${it.product_id}')">
+          X
+        </button>
+      </td>
+    </tr>
+  `).join("");
+
+  calcTotals();
+}
+
+function calcTotals() {
+  const subtotal = CART.reduce((acc, it) => acc + (it.price * it.qty), 0);
+
+  document.getElementById("subtotalLabel").textContent = money(subtotal);
+  document.getElementById("totalLabel").textContent = money(subtotal);
+
+  document.getElementById("items_json").value = JSON.stringify(
+    CART.map(it => ({
+      product_id: it.product_id,
+      qty: it.qty
+    }))
+  );
+}
+
+document.getElementById("saleForm").addEventListener("submit", function(e) {
+  if (CART.length === 0) {
+    e.preventDefault();
+    alert("Agrega al menos un producto.");
+  }
+});
+
+buildIndexFromDatalist();
+</script>
+
+{% endblock %}

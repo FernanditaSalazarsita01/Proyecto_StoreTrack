@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}STORE TRACK | Detalle crédito{% endblock %}
+
+{% block content %}
+
+<div class="panel">
+
+  <div class="ui-toolbar">
+    <div>
+      <h2 class="ui-title">Detalle de venta a crédito</h2>
+      <div class="ui-sub">
+        Cuenta pendiente de {{ sale.get('customer', {}).get('name', '') }}
+      </div>
+    </div>
+
+    <a href="/credito" class="btn btn-secondary">
+      <i class="bi bi-arrow-left"></i> Volver
+    </a>
+  </div>
+
+  <div class="p-3">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show">
+            {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="row g-3 mb-3">
+
+      <div class="col-12 col-lg-4">
+        <div class="ui-card h-100">
+          <h5>Cliente</h5>
+
+          <p class="mb-1">
+            <strong>{{ sale.get('customer', {}).get('name', '') }}</strong>
+          </p>
+
+          <p class="mb-1">
+            <i class="bi bi-telephone"></i>
+            {{ sale.get('customer', {}).get('phone', 'Sin teléfono') }}
+          </p>
+
+          <p class="mb-1">
+            <i class="bi bi-envelope"></i>
+            {{ sale.get('customer', {}).get('email', 'Sin correo') }}
+          </p>
+
+          <p class="mb-0">
+            <i class="bi bi-geo-alt"></i>
+            {{ sale.get('customer', {}).get('address', 'Sin dirección') }}
+          </p>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-8">
+        <div class="row g-3">
+
+          <div class="col-md-4">
+            <div class="stat-card">
+              <span>Total</span>
+              <strong>${{ "%.2f"|format(sale.get('total', 0)|float) }}</strong>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="stat-card">
+              <span>Abonado</span>
+              <strong class="text-success">${{ "%.2f"|format(sale.get('amount_paid', 0)|float) }}</strong>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="stat-card">
+              <span>Pendiente</span>
+              <strong class="text-danger">${{ "%.2f"|format(sale.get('balance', 0)|float) }}</strong>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="ui-card mt-3">
+          <h5>Agregar saldo / abono</h5>
+
+          <form method="POST" action="/credito/{{ sale.get('_id') }}/abonar">
+            <div class="row g-2">
+              <div class="col-md-4">
+                <input type="number" step="0.01" min="0.01" name="amount" class="form-control" placeholder="Monto a abonar" required>
+              </div>
+
+              <div class="col-md-5">
+                <input type="text" name="note" class="form-control" placeholder="Nota opcional">
+              </div>
+
+              <div class="col-md-3">
+                <button type="submit" class="btn btn-success w-100">
+                  <i class="bi bi-plus-circle"></i> Agregar
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <form method="POST" action="/credito/{{ sale.get('_id') }}/liquidar" class="mt-2"
+                onsubmit="return confirm('¿Liquidar completamente esta cuenta?');">
+            <button type="submit" class="btn btn-warning w-100">
+              <i class="bi bi-check-circle"></i> Liquidar cuenta
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="ui-card mb-3">
+      <h5>Productos de la cuenta</h5>
+
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>SKU</th>
+              <th>Unidad</th>
+              <th>Precio</th>
+              <th>Cantidad</th>
+              <th>Importe</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for item in sale.get('items', []) %}
+              <tr>
+                <td><strong>{{ item.get('name', '') }}</strong></td>
+                <td>{{ item.get('sku', '') }}</td>
+                <td>{{ item.get('unit', '') }}</td>
+                <td>${{ "%.2f"|format(item.get('price', 0)|float) }}</td>
+                <td>{{ item.get('qty', 0) }}</td>
+                <td>
+                  <strong>${{ "%.2f"|format(item.get('line_total', 0)|float) }}</strong>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+
+          <tfoot>
+            <tr>
+              <th colspan="5" class="text-end">Total</th>
+              <th>${{ "%.2f"|format(sale.get('total', 0)|float) }}</th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="ui-card">
+      <h5>Historial de abonos</h5>
+
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Monto</th>
+              <th>Nota</th>
+              <th>Registró</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% if sale.get('payments') and sale.get('payments')|length > 0 %}
+              {% for p in sale.get('payments') %}
+                <tr>
+                  <td>
+                    {{ p.get('created_at').strftime('%d/%m/%Y %H:%M') if p.get('created_at') else '' }}
+                  </td>
+                  <td>
+                    <strong class="text-success">
+                      ${{ "%.2f"|format(p.get('amount', 0)|float) }}
+                    </strong>
+                  </td>
+                  <td>{{ p.get('note', '') }}</td>
+                  <td>{{ p.get('created_by_name', '') }}</td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="4" class="text-center text-muted py-4">
+                  Todavía no hay abonos registrados.
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .panel{
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--panel-shadow);
+    border-radius:12px;
+    overflow:hidden;
+  }
+
+  .ui-toolbar{
+    padding:16px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .ui-title{
+    font-weight:900;
+    font-size:22px;
+    margin:0;
+  }
+
+  .ui-sub{
+    color:var(--muted);
+    font-size:12px;
+  }
+
+  .ui-card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    padding:16px;
+  }
+
+  .ui-card h5{
+    font-weight:900;
+    margin-bottom:12px;
+  }
+
+  .stat-card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    padding:16px;
+  }
+
+  .stat-card span{
+    display:block;
+    color:var(--muted);
+    font-size:12px;
+    font-weight:700;
+  }
+
+  .stat-card strong{
+    display:block;
+    font-size:22px;
+    font-weight:900;
+  }
+
+  table thead th{
+    background:#0f3c4c!important;
+    color:#fff!important;
+    font-size:12px;
+    white-space:nowrap;
+  }
+
+  table tbody td,
+  table tfoot th{
+    font-size:12px;
+  }
+</style>
+{% endblock %}

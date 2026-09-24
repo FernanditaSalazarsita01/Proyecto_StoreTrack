@@ -1,0 +1,1136 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  :root {
+    --dev-bg: #f5f7fa;
+    --dev-surface: #ffffff;
+    --dev-surface-soft: #f7f9fc;
+    --dev-text: #172033;
+    --dev-muted: #687386;
+    --dev-border: #dde4ec;
+    --dev-primary: #2f5d8c;
+    --dev-primary-dark: #234767;
+    --dev-success: #3f7c78;
+    --dev-warning: #b07a4f;
+    --dev-danger: #b65c66;
+    --dev-shadow: 0 14px 35px rgba(23, 32, 51, 0.08);
+    --dev-shadow-soft: 0 8px 22px rgba(23, 32, 51, 0.06);
+    --dev-radius: 22px;
+  }
+
+  .developer-dashboard {
+    background: var(--dev-bg);
+    min-height: calc(100vh - 120px);
+  }
+
+  .dev-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 28px;
+    padding: 30px;
+    margin-bottom: 22px;
+    background: linear-gradient(135deg, #172033 0%, #26384f 58%, #2f5d8c 100%);
+    box-shadow: var(--dev-shadow);
+    color: #ffffff;
+  }
+
+  .dev-hero::after {
+    content: "";
+    position: absolute;
+    width: 360px;
+    height: 360px;
+    border-radius: 999px;
+    right: -130px;
+    top: -170px;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .dev-hero-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .dev-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .dev-title {
+    margin: 0;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    font-weight: 900;
+    letter-spacing: -0.045em;
+  }
+
+  .dev-title span {
+    color: #bfdbfe;
+  }
+
+  .dev-subtitle {
+    margin: 10px 0 0;
+    max-width: 720px;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .dev-hero-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .dev-search {
+    position: relative;
+    min-width: 280px;
+  }
+
+  .dev-search i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+  }
+
+  .dev-search input {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px 0 40px;
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.96);
+    color: #111827;
+    outline: none;
+    font-size: 14px;
+  }
+
+  .dev-btn-primary {
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 15px;
+    border-radius: 14px;
+    background: #ffffff;
+    color: #234767;
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 13px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    transition: 0.2s ease;
+  }
+
+  .dev-btn-primary:hover {
+    transform: translateY(-1px);
+    color: #234767;
+    text-decoration: none;
+  }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .kpi-card {
+    position: relative;
+    background: var(--dev-surface);
+    border: 1px solid var(--dev-border);
+    border-radius: var(--dev-radius);
+    padding: 20px;
+    box-shadow: var(--dev-shadow-soft);
+    min-height: 150px;
+    overflow: hidden;
+  }
+
+  .kpi-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--accent, var(--dev-primary));
+  }
+
+  .kpi-card .kpi-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    color: var(--accent, var(--dev-primary));
+    background: color-mix(in srgb, var(--accent, var(--dev-primary)) 12%, #ffffff 88%);
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+
+  .kpi-label {
+    margin: 0;
+    color: var(--dev-muted);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .kpi-value {
+    margin: 8px 0 5px;
+    color: var(--dev-text);
+    font-size: 1.75rem;
+    font-weight: 950;
+    letter-spacing: -0.045em;
+    line-height: 1.05;
+  }
+
+  .kpi-note {
+    color: var(--dev-muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .insight-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .insight-card {
+    background: var(--dev-surface);
+    border: 1px solid var(--dev-border);
+    border-radius: var(--dev-radius);
+    padding: 20px;
+    box-shadow: var(--dev-shadow-soft);
+  }
+
+  .insight-label {
+    margin: 0;
+    color: var(--dev-muted);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .insight-value {
+    margin: 10px 0 6px;
+    color: var(--dev-text);
+    font-size: 1.35rem;
+    font-weight: 950;
+    letter-spacing: -0.035em;
+  }
+
+  .insight-note {
+    color: var(--dev-muted);
+    font-size: 13px;
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(360px, 0.75fr);
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .dev-card {
+    background: var(--dev-surface);
+    border: 1px solid var(--dev-border);
+    border-radius: var(--dev-radius);
+    padding: 22px;
+    box-shadow: var(--dev-shadow-soft);
+  }
+
+  .dev-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .dev-card-title {
+    margin: 0;
+    color: var(--dev-text);
+    font-size: 1.05rem;
+    font-weight: 950;
+    letter-spacing: -0.02em;
+  }
+
+  .dev-card-subtitle {
+    margin: 5px 0 0;
+    color: var(--dev-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .chart-card canvas {
+    width: 100% !important;
+    height: 315px !important;
+  }
+
+  .ranking-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .ranking-item {
+    display: grid;
+    grid-template-columns: 34px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid var(--dev-border);
+    border-radius: 16px;
+    background: var(--dev-surface-soft);
+  }
+
+  .ranking-number {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: #e8f0f6;
+    color: #2f5d8c;
+    font-weight: 950;
+    font-size: 13px;
+  }
+
+  .ranking-company {
+    margin: 0;
+    color: var(--dev-text);
+    font-size: 14px;
+    font-weight: 900;
+  }
+
+  .ranking-meta {
+    margin-top: 3px;
+    color: var(--dev-muted);
+    font-size: 12px;
+  }
+
+  .ranking-total {
+    color: var(--dev-text);
+    font-size: 14px;
+    font-weight: 950;
+    white-space: nowrap;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--dev-border);
+    border-radius: 18px;
+  }
+
+  .table-dev {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--dev-surface);
+  }
+
+  .table-dev th,
+  .table-dev td {
+    padding: 14px 15px;
+    border-bottom: 1px solid var(--dev-border);
+    text-align: left;
+    vertical-align: middle;
+    font-size: 13px;
+  }
+
+  .table-dev th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 950;
+  }
+
+  .table-dev tr:last-child td {
+    border-bottom: none;
+  }
+
+  .table-dev td {
+    color: var(--dev-text);
+  }
+
+  .text-strong {
+    font-weight: 900;
+  }
+
+  .text-muted-dev {
+    color: var(--dev-muted);
+  }
+
+  .badge-status,
+  .badge-plan {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+
+  .badge-active {
+    background: rgba(22, 163, 74, 0.11);
+    color: #15803d;
+  }
+
+  .badge-inactive {
+    background: rgba(220, 38, 38, 0.11);
+    color: #b91c1c;
+  }
+
+  .badge-plan {
+    background: #f0edf7;
+    color: #6f5a8a;
+  }
+
+  .empty-state {
+    padding: 28px;
+    text-align: center;
+    color: var(--dev-muted);
+    font-size: 14px;
+    border: 1px dashed var(--dev-border);
+    border-radius: 18px;
+    background: var(--dev-surface-soft);
+  }
+
+
+  .matplotlib-shortcut {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 18px;
+  }
+
+  .matplotlib-shortcut a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 14px;
+    border-radius: 13px;
+    background: #26384f;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 900;
+    box-shadow: var(--dev-shadow-soft);
+  }
+
+  .matplotlib-shortcut a:hover {
+    color: #ffffff;
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+
+  .chart-axis-guide {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .chart-axis-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 12px;
+    border: 1px solid var(--dev-border);
+    border-radius: 13px;
+    background: var(--dev-surface-soft);
+    color: #4b5563;
+    font-size: 11.5px;
+    line-height: 1.4;
+  }
+
+  .chart-axis-item strong {
+    color: var(--dev-text);
+    font-weight: 900;
+  }
+
+  .chart-axis-dot {
+    width: 9px;
+    height: 9px;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: var(--axis-color, var(--dev-primary));
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--axis-color, var(--dev-primary)) 10%, transparent);
+  }
+
+  .chart-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .chart-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--chart-accent, var(--dev-primary));
+  }
+
+  .chart-card-blue { --chart-accent: #2f5d8c; }
+  .chart-card-teal { --chart-accent: #3f7c78; }
+  .chart-card-purple { --chart-accent: #6f5a8a; }
+
+
+
+  .chart-conclusion {
+    margin-top: 14px;
+    padding: 13px 15px;
+    border: 1px solid var(--dev-border);
+    border-radius: 14px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f3f6fa 100%);
+    color: #4b5563;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  .chart-conclusion strong {
+    color: var(--dev-text);
+    font-weight: 900;
+  }
+
+  .chart-conclusion i {
+    margin-right: 7px;
+    color: var(--chart-accent, var(--dev-primary));
+  }
+
+  .chart-legend-note {
+    margin-top: 8px;
+    color: #7b8798;
+    font-size: 10.5px;
+    line-height: 1.45;
+  }
+
+  @media (max-width: 1400px) {
+    .kpi-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 1200px) {
+    .insight-grid,
+    .dashboard-grid,
+    .charts-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .dev-hero {
+      padding: 24px;
+      border-radius: 22px;
+    }
+
+    .kpi-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .dev-search {
+      min-width: 100%;
+    }
+
+    .chart-axis-guide {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="developer-dashboard">
+
+
+  <div class="matplotlib-shortcut">
+    <a href="{{ url_for('analytics.developer_matplotlib') }}">
+      <i class="bi bi-bar-chart-line-fill"></i>
+      Análisis visual con Matplotlib
+    </a>
+  </div>
+
+
+ 
+
+  <!-- KPIs principales -->
+  <section class="kpi-grid">
+    <article class="kpi-card" style="--accent:#2563eb;">
+      <div class="kpi-icon"><i class="bi bi-people"></i></div>
+      <p class="kpi-label">Usuarios totales</p>
+      <div class="kpi-value">{{ total_users }}</div>
+      <div class="kpi-note">Usuarios registrados en todas las empresas</div>
+    </article>
+
+    <article class="kpi-card" style="--accent:#0f766e;">
+      <div class="kpi-icon"><i class="bi bi-credit-card-2-front"></i></div>
+      <p class="kpi-label">Suscripciones activas</p>
+      <div class="kpi-value">{{ active_subscriptions }}</div>
+      <div class="kpi-note">Empresas activas con plan asignado</div>
+    </article>
+
+    <article class="kpi-card" style="--accent:#7c3aed;">
+      <div class="kpi-icon"><i class="bi bi-buildings"></i></div>
+      <p class="kpi-label">Empresas registradas</p>
+      <div class="kpi-value">{{ total_companies }}</div>
+      <div class="kpi-note">{{ active_companies }} activas / {{ inactive_companies }} inactivas</div>
+    </article>
+
+    <article class="kpi-card" style="--accent:#d97706;">
+      <div class="kpi-icon"><i class="bi bi-calendar-plus"></i></div>
+      <p class="kpi-label">Nuevas este mes</p>
+      <div class="kpi-value">{{ new_companies_month }}</div>
+      <div class="kpi-note">Altas registradas durante el mes actual</div>
+    </article>
+
+    <article class="kpi-card" style="--accent:#15803d;">
+      <div class="kpi-icon"><i class="bi bi-cash-stack"></i></div>
+      <p class="kpi-label">Ingresos estimados</p>
+      <div class="kpi-value">${{ "{:,.2f}".format(estimated_income or 0) }}</div>
+      <div class="kpi-note">Estimación mensual por planes contratados</div>
+    </article>
+
+    <article class="kpi-card" style="--accent:#dc2626;">
+      <div class="kpi-icon"><i class="bi bi-graph-up-arrow"></i></div>
+      <p class="kpi-label">Ventas globales</p>
+      <div class="kpi-value">${{ "{:,.2f}".format(global_sales_total or 0) }}</div>
+      <div class="kpi-note">{{ global_sales_count or 0 }} ventas pagadas registradas</div>
+    </article>
+  </section>
+
+  <!-- Métricas de planes -->
+  <section class="insight-grid" id="planes">
+    <article class="insight-card">
+      <p class="insight-label">Plan más usado</p>
+      <div class="insight-value">{{ plan_most_used.name }}</div>
+      <div class="insight-note">{{ plan_most_used.companies }} empresas registradas</div>
+    </article>
+
+    <article class="insight-card">
+      <p class="insight-label">Plan con más ventas</p>
+      <div class="insight-value">{{ plan_more_sales.name }}</div>
+      <div class="insight-note">${{ "{:,.2f}".format(plan_more_sales.sales_total or 0) }} acumulado</div>
+    </article>
+
+    <article class="insight-card">
+      <p class="insight-label">Plan con más usuarios</p>
+      <div class="insight-value">{{ plan_more_users.name }}</div>
+      <div class="insight-note">{{ plan_more_users.users }} usuarios asociados</div>
+    </article>
+
+    <article class="insight-card">
+      <p class="insight-label">Menor adopción</p>
+      <div class="insight-value">{{ plan_less_adoption.name }}</div>
+      <div class="insight-note">{{ plan_less_adoption.companies }} empresas actualmente</div>
+    </article>
+  </section>
+
+  <section class="dashboard-grid">
+    <article class="dev-card chart-card chart-card-blue">
+      <div class="dev-card-header">
+        <div>
+          <h2 class="dev-card-title">Empresas por plan</h2>
+          <p class="dev-card-subtitle">Distribución de empresas registradas por suscripción.</p>
+        </div>
+      </div>
+      <canvas id="companiesByPlanChart"></canvas>
+      <div class="chart-axis-guide">
+        <div class="chart-axis-item" style="--axis-color:#2f5d8c;">
+          <span class="chart-axis-dot"></span>
+          <span><strong>Eje X:</strong> tipo de plan o suscripción.</span>
+        </div>
+        <div class="chart-axis-item" style="--axis-color:#2f5d8c;">
+          <span class="chart-axis-dot"></span>
+          <span><strong>Eje Y:</strong> número de empresas registradas.</span>
+        </div>
+      </div>
+      <div class="chart-conclusion" id="companiesByPlanConclusion">
+        <i class="bi bi-lightbulb"></i>
+        <strong>Conclusión:</strong> calculando distribución de empresas por plan...
+      </div>
+      <div class="chart-legend-note">
+        Las etiquetas sobre cada barra muestran el número exacto de empresas.
+      </div>
+    </article>
+
+    <article class="dev-card" id="ventas">
+      <div class="dev-card-header">
+        <div>
+          <h2 class="dev-card-title">Empresas con más ventas</h2>
+          <p class="dev-card-subtitle">Ranking por importe total de ventas pagadas.</p>
+        </div>
+      </div>
+
+      {% if top_companies_sales %}
+      <div class="ranking-list searchable-area">
+        {% for company in top_companies_sales %}
+        <div class="ranking-item searchable-row">
+          <div class="ranking-number">{{ loop.index }}</div>
+          <div>
+            <p class="ranking-company">{{ company.name }}</p>
+            <div class="ranking-meta">
+              {{ company.plan }} · {{ company.sales_count }} ventas · {{ company.users }} usuarios
+            </div>
+          </div>
+          <div class="ranking-total">${{ "{:,.2f}".format(company.sales_total or 0) }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">Sin ventas registradas.</div>
+      {% endif %}
+    </article>
+  </section>
+
+  <section class="charts-grid">
+    <article class="dev-card chart-card chart-card-teal">
+      <div class="dev-card-header">
+        <div>
+          <h2 class="dev-card-title">Ventas por plan</h2>
+          <p class="dev-card-subtitle">Importe acumulado de ventas pagadas por suscripción.</p>
+        </div>
+      </div>
+      <canvas id="salesByPlanChart"></canvas>
+      <div class="chart-axis-guide">
+        <div class="chart-axis-item" style="--axis-color:#3f7c78;">
+          <span class="chart-axis-dot"></span>
+          <span><strong>Eje X:</strong> tipo de plan o suscripción.</span>
+        </div>
+        <div class="chart-axis-item" style="--axis-color:#3f7c78;">
+          <span class="chart-axis-dot"></span>
+          <span><strong>Eje Y:</strong> importe acumulado de ventas pagadas en MXN.</span>
+        </div>
+      </div>
+      <div class="chart-conclusion" id="salesByPlanConclusion">
+        <i class="bi bi-lightbulb"></i>
+        <strong>Conclusión:</strong> calculando comportamiento de ventas por plan...
+      </div>
+      <div class="chart-legend-note">
+        Las etiquetas sobre cada barra muestran el importe exacto acumulado.
+      </div>
+    </article>
+
+    <article class="dev-card chart-card chart-card-purple">
+      <div class="dev-card-header">
+        <div>
+          <h2 class="dev-card-title">Usuarios por plan</h2>
+          <p class="dev-card-subtitle">Usuarios registrados agrupados por plan contratado.</p>
+        </div>
+      </div>
+      <canvas id="usersByPlanChart"></canvas>
+      <div class="chart-axis-guide">
+        <div class="chart-axis-item" style="--axis-color:#6f5a8a;">
+          <span class="chart-axis-dot"></span>
+          <span><strong>Segmentos:</strong> cada color representa un plan.</span>
+        </div>
+        <div class="chart-axis-item" style="--axis-color:#6f5a8a;">
+          <span class="chart-axis-dot"></span>
+          <span><strong>Valor:</strong> cantidad de usuarios asociados a cada plan.</span>
+        </div>
+      </div>
+      <div class="chart-conclusion" id="usersByPlanConclusion">
+        <i class="bi bi-lightbulb"></i>
+        <strong>Conclusión:</strong> calculando distribución de usuarios por plan...
+      </div>
+      <div class="chart-legend-note">
+        La leyenda identifica cada plan y el tooltip muestra su número de usuarios.
+      </div>
+    </article>
+  </section>
+
+  <section class="dev-card">
+    <div class="dev-card-header">
+      <div>
+        <h2 class="dev-card-title">Resumen por plan</h2>
+        <p class="dev-card-subtitle">Comparativo de adopción, usuarios, ventas e ingresos estimados.</p>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="table-dev">
+        <thead>
+          <tr>
+            <th>Plan</th>
+            <th>Empresas</th>
+            <th>Usuarios</th>
+            <th>Ventas</th>
+            <th>Ingreso estimado</th>
+            <th>Adopción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for plan in plans_summary %}
+          <tr>
+            <td><span class="badge-plan"><i class="bi bi-gem"></i>{{ plan.name }}</span></td>
+            <td class="text-strong">{{ plan.companies }}</td>
+            <td>{{ plan.users }}</td>
+            <td>${{ "{:,.2f}".format(plan.sales_total or 0) }}</td>
+            <td>${{ "{:,.2f}".format(plan.income or 0) }}</td>
+            <td>{{ plan.adoption }}%</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6">No hay planes configurados.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="dev-card mt-3" id="empresas">
+    <div class="dev-card-header">
+      <div>
+        <h2 class="dev-card-title">Empresas recientes</h2>
+        <p class="dev-card-subtitle">Últimas empresas registradas en la plataforma.</p>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="table-dev searchable-area">
+        <thead>
+          <tr>
+            <th>Empresa</th>
+            <th>Plan</th>
+            <th>Estado</th>
+            <th>Usuarios</th>
+            <th>Fecha alta</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for company in recent_companies %}
+          <tr class="searchable-row">
+            <td class="text-strong">{{ company.name }}</td>
+            <td><span class="badge-plan">{{ company.plan_name or company.plan or "Sin plan" }}</span></td>
+            <td>
+              {% if company.active %}
+                <span class="badge-status badge-active"><i class="bi bi-check-circle"></i>Activa</span>
+              {% else %}
+                <span class="badge-status badge-inactive"><i class="bi bi-x-circle"></i>Inactiva</span>
+              {% endif %}
+            </td>
+            <td>{{ company.total_users }}</td>
+            <td>
+              {% if company.display_date %}
+                {{ company.display_date.strftime("%d/%m/%Y") }}
+              {% else %}
+                <span class="text-muted-dev">Sin fecha</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5">No hay empresas registradas.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const companiesByPlanLabels = {{ companies_by_plan_labels | tojson }};
+  const companiesByPlanValues = {{ companies_by_plan_values | tojson }};
+
+  const salesByPlanLabels = {{ sales_by_plan_labels | tojson }};
+  const salesByPlanValues = {{ sales_by_plan_values | tojson }};
+
+  const usersByPlanLabels = {{ users_by_plan_labels | tojson }};
+  const usersByPlanValues = {{ users_by_plan_values | tojson }};
+
+  const chartPalette = [
+    "#2F5D8C",
+    "#3F7C78",
+    "#6F5A8A",
+    "#B07A4F",
+    "#B65C66",
+    "#557A95",
+    "#698474",
+    "#8B6F8F",
+    "#C08A62",
+    "#7A7184"
+  ];
+
+  const chartPaletteSoft = chartPalette.map(color => color + "E6");
+
+  // Plugin propio: escribe el valor exacto encima de cada barra.
+  const valueLabelPlugin = {
+    id: "valueLabelPlugin",
+    afterDatasetsDraw(chart, args, pluginOptions) {
+      if (!pluginOptions || pluginOptions.display === false) return;
+
+      const { ctx } = chart;
+      const dataset = chart.data.datasets[0];
+      const meta = chart.getDatasetMeta(0);
+
+      ctx.save();
+      ctx.font = "700 11px Arial";
+      ctx.fillStyle = "#344054";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+
+      meta.data.forEach((element, index) => {
+        const raw = Number(dataset.data[index] || 0);
+        let label = raw.toLocaleString("es-MX");
+
+        if (pluginOptions.format === "currency") {
+          label = "$" + raw.toLocaleString("es-MX", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+          });
+        }
+
+        ctx.fillText(label, element.x, element.y - 8);
+      });
+
+      ctx.restore();
+    }
+  };
+
+  Chart.register(valueLabelPlugin);
+
+  function setChartConclusion(elementId, labels, values, type) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    if (!labels.length || !values.length || values.every(v => Number(v || 0) === 0)) {
+      element.innerHTML =
+        '<i class="bi bi-info-circle"></i><strong>Conclusión:</strong> no hay datos suficientes para interpretar esta gráfica.';
+      return;
+    }
+
+    const numericValues = values.map(v => Number(v || 0));
+    const maxValue = Math.max(...numericValues);
+    const maxIndex = numericValues.indexOf(maxValue);
+    const total = numericValues.reduce((acc, value) => acc + value, 0);
+    const share = total > 0 ? (maxValue / total) * 100 : 0;
+    const topLabel = labels[maxIndex] || "Sin nombre";
+
+    let message = "";
+
+    if (type === "companies") {
+      message =
+        `El plan <strong>${topLabel}</strong> concentra la mayor cantidad de empresas ` +
+        `con <strong>${maxValue.toLocaleString("es-MX")}</strong>, equivalente al ` +
+        `<strong>${share.toFixed(1)}%</strong> del total mostrado.`;
+    } else if (type === "sales") {
+      message =
+        `El plan <strong>${topLabel}</strong> registra el mayor importe de ventas pagadas con ` +
+        `<strong>$${maxValue.toLocaleString("es-MX", {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>, ` +
+        `representando el <strong>${share.toFixed(1)}%</strong> del importe total mostrado.`;
+    } else if (type === "users") {
+      message =
+        `El plan <strong>${topLabel}</strong> reúne la mayor cantidad de usuarios con ` +
+        `<strong>${maxValue.toLocaleString("es-MX")}</strong>, equivalente al ` +
+        `<strong>${share.toFixed(1)}%</strong> de los usuarios representados.`;
+    }
+
+    element.innerHTML =
+      '<i class="bi bi-lightbulb"></i><strong>Conclusión:</strong> ' + message;
+  }
+
+  setChartConclusion(
+    "companiesByPlanConclusion",
+    companiesByPlanLabels,
+    companiesByPlanValues,
+    "companies"
+  );
+
+  setChartConclusion(
+    "salesByPlanConclusion",
+    salesByPlanLabels,
+    salesByPlanValues,
+    "sales"
+  );
+
+  setChartConclusion(
+    "usersByPlanConclusion",
+    usersByPlanLabels,
+    usersByPlanValues,
+    "users"
+  );
+
+  const commonChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        labels: {
+          boxWidth: 12,
+          usePointStyle: true,
+          font: {
+            size: 12,
+            weight: "600"
+          }
+        }
+      },
+      tooltip: {
+        backgroundColor: "#26384f",
+        padding: 12,
+        titleFont: {
+          size: 13,
+          weight: "700"
+        },
+        bodyFont: {
+          size: 12
+        }
+      }
+    }
+  };
+
+  new Chart(document.getElementById("companiesByPlanChart"), {
+    type: "bar",
+    data: {
+      labels: companiesByPlanLabels,
+      datasets: [{
+        label: "Empresas",
+        data: companiesByPlanValues,
+        backgroundColor: companiesByPlanLabels.map((_, index) => chartPaletteSoft[index % chartPaletteSoft.length]),
+        borderColor: companiesByPlanLabels.map((_, index) => chartPalette[index % chartPalette.length]),
+        borderWidth: 1,
+        borderRadius: 10,
+        maxBarThickness: 46
+      }]
+    },
+    options: {
+      ...commonChartOptions,
+      plugins: {
+        ...commonChartOptions.plugins,
+        legend: { display: false },
+        valueLabelPlugin: {
+          display: true,
+          format: "integer"
+        }
+      },
+      layout: {
+        padding: { top: 24 }
+      },
+      layout: {
+        padding: { top: 24 }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          title: { display: true, text: "Eje X — Plan", color: "#526071", font: { weight: "700", size: 11 } },
+          ticks: { color: "#687386", font: { weight: "700" } }
+        },
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: "Eje Y — Número de empresas", color: "#526071", font: { weight: "700", size: 11 } },
+          grid: { color: "rgba(148, 163, 184, 0.18)" },
+          ticks: { precision: 0, color: "#687386" }
+        }
+      }
+    }
+  });
+
+  new Chart(document.getElementById("salesByPlanChart"), {
+    type: "bar",
+    data: {
+      labels: salesByPlanLabels,
+      datasets: [{
+        label: "Ventas",
+        data: salesByPlanValues,
+        backgroundColor: salesByPlanLabels.map((_, index) => chartPaletteSoft[index % chartPaletteSoft.length]),
+        borderColor: salesByPlanLabels.map((_, index) => chartPalette[index % chartPalette.length]),
+        borderWidth: 1,
+        borderRadius: 10,
+        maxBarThickness: 46
+      }]
+    },
+    options: {
+      ...commonChartOptions,
+      plugins: {
+        ...commonChartOptions.plugins,
+        legend: { display: false },
+        valueLabelPlugin: {
+          display: true,
+          format: "currency"
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          title: { display: true, text: "Eje X — Plan", color: "#526071", font: { weight: "700", size: 11 } },
+          ticks: { color: "#687386", font: { weight: "700" } }
+        },
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: "Eje Y — Ventas acumuladas (MXN)", color: "#526071", font: { weight: "700", size: 11 } },
+          grid: { color: "rgba(148, 163, 184, 0.18)" },
+          ticks: {
+            color: "#687386",
+            callback: function(value) {
+              return "$" + Number(value).toLocaleString("es-MX");
+            }
+          }
+        }
+      }
+    }
+  });
+
+  new Chart(document.getElementById("usersByPlanChart"), {
+    type: "doughnut",
+    data: {
+      labels: usersByPlanLabels,
+      datasets: [{
+        data: usersByPlanValues,
+        backgroundColor: usersByPlanLabels.map((_, index) => chartPaletteSoft[index % chartPaletteSoft.length]),
+        borderColor: "#ffffff",
+        borderWidth: 4,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      ...commonChartOptions,
+      cutout: "68%"
+    }
+  });
+
+  const searchInput = document.getElementById("companySearch");
+  if (searchInput) {
+    searchInput.addEventListener("input", function() {
+      const term = this.value.toLowerCase().trim();
+      document.querySelectorAll(".searchable-row").forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(term) ? "" : "none";
+      });
+    });
+  }
+</script>
+{% endblock %}

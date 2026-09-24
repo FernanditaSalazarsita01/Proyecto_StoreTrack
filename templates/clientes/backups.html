@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}STORE TRACK | Backups Clientes{% endblock %}
+
+{% block extra_css %}
+<style>
+  .table-card{
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--panel-shadow);
+    border-radius:14px;
+    overflow:hidden;
+  }
+
+  .toolbar{
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--panel-shadow);
+    border-radius:14px;
+    padding:16px;
+    margin-bottom:16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .toolbar h2{
+    margin:0;
+    font-size:22px;
+    font-weight:900;
+  }
+
+  .toolbar small{
+    color:var(--muted);
+  }
+
+  .table.store{
+    margin:0;
+    border-collapse:separate;
+    border-spacing:0;
+  }
+
+  .table.store thead th{
+    background:#0f3c4c;
+    color:#fff;
+    font-weight:800;
+    font-size:12px;
+    padding:11px 12px;
+    border:0;
+    white-space:nowrap;
+  }
+
+  .table.store tbody td{
+    background:#fff;
+    font-size:12px;
+    padding:11px 12px;
+    border-top:1px solid #e6eaee;
+    vertical-align:middle;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="toolbar">
+  <div>
+    <h2>Backups de clientes</h2>
+    <small>Historial de respaldos de clientes para: {{ session.company_name }}</small>
+  </div>
+
+  <a href="/clientes" class="btn btn-secondary">
+    <i class="bi bi-arrow-left"></i> Volver a clientes
+  </a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="mb-3">
+      {% for category, msg in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show">
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table store align-middle">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Total clientes</th>
+          <th>Creado por</th>
+          <th class="text-end">Descargas</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      {% if backups and backups|length > 0 %}
+        {% for b in backups %}
+          <tr>
+            <td>
+              {{ b.get('created_at').strftime('%d/%m/%Y %H:%M') if b.get('created_at') else '' }}
+            </td>
+
+            <td>
+              <strong>{{ b.get('total_clients', 0) }}</strong>
+            </td>
+
+            <td>
+              {{ b.get('created_by_name', '') }}
+            </td>
+
+            <td class="text-end">
+              <div class="btn-group btn-group-sm">
+                <a href="/clientes/backups/{{ b.get('_id') }}/download/pdf" class="btn btn-outline-danger">
+                  PDF
+                </a>
+                <a href="/clientes/backups/{{ b.get('_id') }}/download/xlsx" class="btn btn-outline-success">
+                  Excel
+                </a>
+                <a href="/clientes/backups/{{ b.get('_id') }}/download/json" class="btn btn-outline-primary">
+                  JSON
+                </a>
+                <a href="/clientes/backups/{{ b.get('_id') }}/download/sql" class="btn btn-outline-dark">
+                  SQL
+                </a>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="4" class="text-center text-muted py-4">
+            No hay backups de clientes registrados.
+          </td>
+        </tr>
+      {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

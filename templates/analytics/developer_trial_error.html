@@ -1,0 +1,928 @@
+{% extends "base.html" %}
+
+{% block title %}
+Prueba y error | {{ company.name }}
+{% endblock %}
+
+{% block content %}
+<style>
+  .trial-hero {
+    background:
+      linear-gradient(
+        135deg,
+        rgba(13, 110, 253, .12),
+        rgba(111, 66, 193, .10)
+      );
+    border: 1px solid rgba(13, 110, 253, .12);
+    border-radius: 1.25rem;
+  }
+
+  .trial-card {
+    border: 0;
+    border-radius: 1rem;
+    box-shadow: 0 .45rem 1.4rem rgba(31, 45, 61, .08);
+  }
+
+  .metric-label {
+    font-size: .72rem;
+    letter-spacing: .06rem;
+    color: #6c757d;
+    font-weight: 700;
+  }
+
+  .metric-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+  }
+
+  .best-card {
+    background:
+      linear-gradient(
+        135deg,
+        rgba(25, 135, 84, .12),
+        rgba(13, 202, 240, .08)
+      );
+    border: 1px solid rgba(25, 135, 84, .15);
+  }
+
+  .best-value {
+    font-size: 1.45rem;
+    font-weight: 800;
+  }
+
+  .table-trials thead th {
+    white-space: nowrap;
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .04rem;
+    color: #6c757d;
+  }
+
+  .table-trials tbody td {
+    vertical-align: middle;
+  }
+
+  .best-row {
+    background: rgba(25, 135, 84, .08) !important;
+  }
+
+  .score-bar {
+    width: 110px;
+    height: 7px;
+    background: #e9ecef;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .score-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      #0d6efd,
+      #6f42c1
+    );
+  }
+
+  .chart-container {
+    position: relative;
+    height: 390px;
+  }
+
+  .help-text {
+    font-size: .83rem;
+    color: #6c757d;
+  }
+
+  .ranking-badge {
+    min-width: 34px;
+    display: inline-flex;
+    justify-content: center;
+  }
+
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, .60);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+  }
+
+  .loading-box {
+    width: min(420px, calc(100% - 2rem));
+    padding: 2rem;
+    background: white;
+    border-radius: 1.25rem;
+    text-align: center;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, .20);
+  }
+</style>
+
+<div class="container-fluid py-4">
+
+  <!-- ENCABEZADO -->
+  <div class="trial-hero p-4 mb-4">
+    <div
+      class="d-flex justify-content-between align-items-center
+             flex-wrap gap-3"
+    >
+      <div>
+        <div class="text-primary fw-semibold small mb-1">
+          OPTIMIZACIÓN DEL MODELO
+        </div>
+
+        <h2 class="fw-bold mb-2">
+          Prueba y error de Random Forest
+        </h2>
+
+        <p class="text-muted mb-0">
+          El sistema entrena distintas configuraciones y selecciona
+          automáticamente la que obtiene el mejor resultado para
+          <strong>{{ company.name }}</strong>.
+        </p>
+      </div>
+
+      <div class="d-flex gap-2 flex-wrap">
+        <a
+          href="{{ url_for(
+            'analytics.developer_company_model',
+            company_id=company.id
+          ) }}"
+          class="btn btn-outline-secondary"
+        >
+          <i class="bi bi-arrow-left me-1"></i>
+          Volver
+        </a>
+
+        <form
+          id="trialForm"
+          method="post"
+          action="{{ url_for(
+            'analytics.run_developer_trial_error',
+            company_id=company.id
+          ) }}"
+        >
+          <button
+            type="submit"
+            class="btn btn-primary"
+          >
+            <i class="bi bi-play-circle me-1"></i>
+
+            {% if results %}
+              Ejecutar nuevamente
+            {% else %}
+              Ejecutar pruebas
+            {% endif %}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATOS DISPONIBLES -->
+  <div class="row g-3 mb-4">
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="card trial-card h-100">
+        <div class="card-body">
+          <div class="metric-label">
+            EJEMPLOS DE ENTRENAMIENTO
+          </div>
+
+          <div class="metric-value">
+            {{ summary.training_rows }}
+          </div>
+
+          <div class="help-text">
+            Registros históricos usados para probar configuraciones.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="card trial-card h-100">
+        <div class="card-body">
+          <div class="metric-label">
+            CASOS DE RECOMPRA
+          </div>
+
+          <div class="metric-value text-success">
+            {{ summary.positive_rows }}
+          </div>
+
+          <div class="help-text">
+            Clientes que volvieron a comprar dentro de 30 días.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="card trial-card h-100">
+        <div class="card-body">
+          <div class="metric-label">
+            CASOS DE NO RECOMPRA
+          </div>
+
+          <div class="metric-value text-danger">
+            {{ summary.negative_rows }}
+          </div>
+
+          <div class="help-text">
+            Clientes que no compraron nuevamente en ese periodo.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="card trial-card h-100">
+        <div class="card-body">
+          <div class="metric-label">
+            CONFIGURACIONES PROBADAS
+          </div>
+
+          <div class="metric-value">
+            {% if results %}
+              {{ results.total_trials }}
+            {% else %}
+              0
+            {% endif %}
+          </div>
+
+          <div class="help-text">
+            Combinaciones de árboles y parámetros evaluadas.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  {% if summary.positive_rows > 0
+        and summary.negative_rows > 0 %}
+
+    {% set larger_class = [
+      summary.positive_rows,
+      summary.negative_rows
+    ] | max %}
+
+    {% set smaller_class = [
+      summary.positive_rows,
+      summary.negative_rows
+    ] | min %}
+
+    {% if smaller_class > 0
+          and larger_class / smaller_class >= 3 %}
+      <div class="alert alert-warning border-0 shadow-sm mb-4">
+        <div class="d-flex gap-3">
+          <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+
+          <div>
+            <strong>Datos desbalanceados.</strong>
+
+            Existen {{ summary.positive_rows }} casos de recompra y
+            {{ summary.negative_rows }} casos de no recompra.
+
+            Por ello, conviene revisar especialmente la métrica
+            <strong>F1</strong>, no solamente la exactitud.
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+  {% endif %}
+
+  {% if results %}
+
+    <!-- MEJOR CONFIGURACIÓN -->
+    <div class="card trial-card best-card mb-4">
+      <div class="card-body p-4">
+
+        <div
+          class="d-flex justify-content-between align-items-start
+                 flex-wrap gap-3 mb-4"
+        >
+          <div>
+            <div class="text-success fw-bold small mb-1">
+              CONFIGURACIÓN GANADORA
+            </div>
+
+            <h4 class="fw-bold mb-1">
+              Mejor resultado encontrado
+            </h4>
+
+            <p class="text-muted mb-0">
+              Esta configuración fue seleccionada porque obtuvo
+              el mejor equilibrio entre precisión y detección.
+            </p>
+          </div>
+
+          <span class="badge text-bg-success fs-6 px-3 py-2">
+            <i class="bi bi-trophy-fill me-1"></i>
+            Mejor modelo
+          </span>
+        </div>
+
+        <div class="row g-3">
+
+          <div class="col-sm-6 col-lg-3">
+            <div class="bg-white rounded-4 p-3 h-100">
+              <div class="metric-label">
+                NÚMERO DE ÁRBOLES
+              </div>
+
+              <div class="best-value">
+                {{ results.best.n_estimators }}
+              </div>
+
+              <div class="help-text">
+                Cantidad de árboles de decisión utilizados.
+              </div>
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-lg-3">
+            <div class="bg-white rounded-4 p-3 h-100">
+              <div class="metric-label">
+                PROFUNDIDAD MÁXIMA
+              </div>
+
+              <div class="best-value">
+                {{ results.best.max_depth or "Sin límite" }}
+              </div>
+
+              <div class="help-text">
+                Máximo nivel de decisiones de cada árbol.
+              </div>
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-lg-3">
+            <div class="bg-white rounded-4 p-3 h-100">
+              <div class="metric-label">
+                REGISTROS POR HOJA
+              </div>
+
+              <div class="best-value">
+                {{ results.best.min_samples_leaf }}
+              </div>
+
+              <div class="help-text">
+                Mínimo de casos requerido al final de una rama.
+              </div>
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-lg-3">
+            <div class="bg-white rounded-4 p-3 h-100">
+              <div class="metric-label">
+                VARIABLES POR DECISIÓN
+              </div>
+
+              <div class="best-value">
+                {{ results.best.max_features }}
+              </div>
+
+              <div class="help-text">
+                Forma de seleccionar variables dentro del bosque.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <hr class="my-4">
+
+        <div class="row g-3">
+
+          <div class="col-sm-6 col-lg-3">
+            <div class="text-muted small">
+              Exactitud
+            </div>
+
+            <div class="h3 fw-bold mb-0">
+              {{ (results.best.accuracy * 100)|round(2) }}%
+            </div>
+
+            <div class="help-text">
+              Porcentaje total de predicciones correctas.
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-lg-3">
+            <div class="text-muted small">
+              Precisión
+            </div>
+
+            <div class="h3 fw-bold mb-0">
+              {{ (results.best.precision * 100)|round(2) }}%
+            </div>
+
+            <div class="help-text">
+              Qué tan confiables fueron los casos positivos.
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-lg-3">
+            <div class="text-muted small">
+              Sensibilidad
+            </div>
+
+            <div class="h3 fw-bold mb-0">
+              {{ (results.best.recall * 100)|round(2) }}%
+            </div>
+
+            <div class="help-text">
+              Cuántas recompras reales logró detectar.
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-lg-3">
+            <div class="text-muted small">
+              F1
+            </div>
+
+            <div class="h3 fw-bold text-primary mb-0">
+              {{ (results.best.f1 * 100)|round(2) }}%
+            </div>
+
+            <div class="help-text">
+              Equilibrio entre precisión y sensibilidad.
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- GRÁFICA -->
+    <div class="card trial-card mb-4">
+      <div class="card-body p-4">
+
+        <div
+          class="d-flex justify-content-between align-items-start
+                 flex-wrap gap-3 mb-3"
+        >
+          <div>
+            <h5 class="fw-bold mb-1">
+              Comparación de configuraciones
+            </h5>
+
+            <p class="text-muted mb-0">
+              La gráfica muestra las mejores pruebas ordenadas por F1.
+            </p>
+          </div>
+
+          <span class="badge text-bg-light border">
+            Top
+            {% if results.trials|length > 10 %}
+              10
+            {% else %}
+              {{ results.trials|length }}
+            {% endif %}
+            resultados
+          </span>
+        </div>
+
+        <div class="chart-container">
+          <canvas id="trialComparisonChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPLICACIÓN -->
+    <div class="card trial-card mb-4">
+      <div class="card-body p-4">
+
+        
+
+        <div class="row g-3">
+
+          <div class="col-md-6 col-xl-3">
+            <div class="border rounded-4 p-3 h-100">
+              <div class="fw-bold mb-1">
+                Exactitud
+              </div>
+
+              <div class="help-text">
+                Indica cuántos casos fueron clasificados correctamente
+                respecto del total.
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-xl-3">
+            <div class="border rounded-4 p-3 h-100">
+              <div class="fw-bold mb-1">
+                Precisión
+              </div>
+
+              <div class="help-text">
+                Indica cuántos clientes predichos como recompra
+                realmente recompraron.
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-xl-3">
+            <div class="border rounded-4 p-3 h-100">
+              <div class="fw-bold mb-1">
+                Sensibilidad
+              </div>
+
+              <div class="help-text">
+                Indica cuántos clientes que realmente recompraron
+                fueron detectados por el modelo.
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-xl-3">
+            <div class="border rounded-4 p-3 h-100">
+              <div class="fw-bold mb-1">
+                F1
+              </div>
+
+              <div class="help-text">
+                Combina precisión y sensibilidad. Es la métrica
+                principal utilizada para elegir el ganador.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="card trial-card">
+      <div class="card-body p-4">
+
+        <div
+          class="d-flex justify-content-between align-items-center
+                 flex-wrap gap-3 mb-3"
+        >
+          <div>
+            <h5 class="fw-bold mb-1">
+              Detalle de todas las pruebas
+            </h5>
+
+            <p class="text-muted mb-0">
+              La primera fila corresponde a la configuración ganadora.
+            </p>
+          </div>
+
+          <div style="min-width: 250px;">
+            <input
+              id="trialSearch"
+              type="search"
+              class="form-control"
+              placeholder="Buscar configuración..."
+            >
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table
+            id="trialTable"
+            class="table table-hover table-trials align-middle"
+          >
+            <thead>
+              <tr>
+                <th>Posición</th>
+                <th>Configuración</th>
+                <th>Árboles</th>
+                <th>Profundidad</th>
+                <th>Registros por hoja</th>
+                <th>Variables</th>
+                <th>Exactitud</th>
+                <th>Precisión</th>
+                <th>Sensibilidad</th>
+                <th>F1</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for trial in results.trials %}
+                <tr
+                  {% if loop.first %}
+                    class="best-row"
+                  {% endif %}
+                >
+                  <td>
+                    {% if loop.first %}
+                      <span
+                        class="badge text-bg-success ranking-badge"
+                      >
+                        <i class="bi bi-trophy-fill"></i>
+                      </span>
+                    {% else %}
+                      <span
+                        class="badge text-bg-light border
+                               text-dark ranking-badge"
+                      >
+                        {{ loop.index }}
+                      </span>
+                    {% endif %}
+                  </td>
+
+                  <td>
+                    <div class="fw-semibold">
+                      Prueba {{ trial.trial }}
+                    </div>
+
+                    {% if loop.first %}
+                      <div class="small text-success">
+                        Configuración seleccionada
+                      </div>
+                    {% endif %}
+                  </td>
+
+                  <td>
+                    {{ trial.n_estimators }}
+                  </td>
+
+                  <td>
+                    {{ trial.max_depth or "Sin límite" }}
+                  </td>
+
+                  <td>
+                    {{ trial.min_samples_leaf }}
+                  </td>
+
+                  <td>
+                    <span class="badge text-bg-light border text-dark">
+                      {{ trial.max_features }}
+                    </span>
+                  </td>
+
+                  <td>
+                    <div class="fw-semibold">
+                      {{ (trial.accuracy * 100)|round(2) }}%
+                    </div>
+
+                    <div class="score-bar mt-1">
+                      <div
+                        class="score-fill"
+                        style="width:
+                          {{ (trial.accuracy * 100)|round(2) }}%;"
+                      ></div>
+                    </div>
+                  </td>
+
+                  <td>
+                    {{ (trial.precision * 100)|round(2) }}%
+                  </td>
+
+                  <td>
+                    {{ (trial.recall * 100)|round(2) }}%
+                  </td>
+
+                  <td>
+                    <div class="fw-bold text-primary">
+                      {{ (trial.f1 * 100)|round(2) }}%
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+  {% else %}
+
+    <!-- ESTADO INICIAL -->
+    <div class="card trial-card">
+      <div class="card-body text-center py-5">
+
+        <div
+          class="mx-auto mb-3 d-flex align-items-center
+                 justify-content-center rounded-circle
+                 bg-primary-subtle text-primary"
+          style="width: 74px; height: 74px;"
+        >
+          <i class="bi bi-sliders fs-2"></i>
+        </div>
+
+        <h4 class="fw-bold">
+          El análisis todavía no se ha ejecutado
+        </h4>
+
+        <p class="text-muted mx-auto mb-4" style="max-width: 650px;">
+          El sistema probará diferentes cantidades de árboles,
+          profundidades y tamaños mínimos de hoja. Después comparará
+          sus métricas y guardará automáticamente la mejor configuración.
+        </p>
+
+        <form
+          method="post"
+          action="{{ url_for(
+            'analytics.run_developer_trial_error',
+            company_id=company.id
+          ) }}"
+          class="trial-start-form"
+        >
+          <button
+            type="submit"
+            class="btn btn-primary btn-lg"
+          >
+            <i class="bi bi-play-fill me-1"></i>
+            Comenzar prueba y error
+          </button>
+        </form>
+
+      </div>
+    </div>
+
+  {% endif %}
+
+</div>
+
+<!-- PANTALLA DE CARGA -->
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-box">
+
+    <div
+      class="spinner-border text-primary mb-3"
+      role="status"
+    ></div>
+
+    <h5 class="fw-bold">
+      Probando configuraciones
+    </h5>
+
+    <p class="text-muted mb-0">
+      El sistema está entrenando y comparando distintos
+      Random Forest. Este proceso puede tardar algunos segundos.
+    </p>
+
+  </div>
+</div>
+
+{% if results %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  const trials = {{ results.trials | tojson }};
+  const topTrials = trials.slice(0, 10);
+
+  const chartLabels = topTrials.map(
+    item => `Prueba ${item.trial}`
+  );
+
+  const accuracyValues = topTrials.map(
+    item => Number((item.accuracy * 100).toFixed(2))
+  );
+
+  const precisionValues = topTrials.map(
+    item => Number((item.precision * 100).toFixed(2))
+  );
+
+  const recallValues = topTrials.map(
+    item => Number((item.recall * 100).toFixed(2))
+  );
+
+  const f1Values = topTrials.map(
+    item => Number((item.f1 * 100).toFixed(2))
+  );
+
+  const chartCanvas = document.getElementById(
+    "trialComparisonChart"
+  );
+
+  new Chart(chartCanvas, {
+    type: "bar",
+
+    data: {
+      labels: chartLabels,
+
+      datasets: [
+        {
+          label: "Exactitud",
+          data: accuracyValues,
+          borderWidth: 1,
+          borderRadius: 6
+        },
+        {
+          label: "Precisión",
+          data: precisionValues,
+          borderWidth: 1,
+          borderRadius: 6
+        },
+        {
+          label: "Sensibilidad",
+          data: recallValues,
+          borderWidth: 1,
+          borderRadius: 6
+        },
+        {
+          label: "F1",
+          data: f1Values,
+          borderWidth: 1,
+          borderRadius: 6
+        }
+      ]
+    },
+
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+
+      interaction: {
+        mode: "index",
+        intersect: false
+      },
+
+      plugins: {
+        legend: {
+          position: "bottom"
+        },
+
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `${context.dataset.label}: ${context.raw}%`;
+            }
+          }
+        }
+      },
+
+      scales: {
+        y: {
+          beginAtZero: true,
+          suggestedMax: 100,
+
+          ticks: {
+            callback: function(value) {
+              return value + "%";
+            }
+          }
+        },
+
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+
+  const trialSearch = document.getElementById("trialSearch");
+  const trialRows = document.querySelectorAll(
+    "#trialTable tbody tr"
+  );
+
+  trialSearch.addEventListener("input", function() {
+    const value = this.value.toLowerCase().trim();
+
+    trialRows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+
+      row.style.display = text.includes(value)
+        ? ""
+        : "none";
+    });
+  });
+</script>
+{% endif %}
+
+<script>
+  const loadingOverlay = document.getElementById(
+    "loadingOverlay"
+  );
+
+  const executionForms = document.querySelectorAll(
+    "#trialForm, .trial-start-form"
+  );
+
+  executionForms.forEach(form => {
+    form.addEventListener("submit", function() {
+      loadingOverlay.style.display = "flex";
+
+      const button = this.querySelector(
+        'button[type="submit"]'
+      );
+
+      if (button) {
+        button.disabled = true;
+        button.innerHTML = `
+          <span
+            class="spinner-border spinner-border-sm me-2"
+            role="status"
+          ></span>
+          Ejecutando...
+        `;
+      }
+    });
+  });
+</script>
+{% endblock %}

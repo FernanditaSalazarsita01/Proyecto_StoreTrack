@@ -1,0 +1,485 @@
+{% extends "base.html" %}
+
+{% block title %}STORE TRACK | CRUD Productos{% endblock %}
+
+{% block extra_css %}
+<style>
+  body{
+    background:#eef1f5;
+  }
+
+  .dashboard-wrap{
+    padding-top:6px;
+  }
+
+  /* =========================
+     KPIS
+  ========================== */
+  .kpi{
+    background:#fff;
+    border:1px solid #e3e7ee;
+    box-shadow:0 2px 8px rgba(15,23,42,.06);
+    height:82px;
+    display:flex;
+    border-radius:3px;
+    overflow:hidden;
+  }
+
+  .kpi-left{
+    width:82px;
+    min-width:82px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:30px;
+  }
+
+  .kpi-body{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    background:#fff;
+  }
+
+  .kpi-num{
+    font-size:24px;
+    font-weight:700;
+    color:#1f2937;
+    line-height:1;
+    margin-bottom:8px;
+  }
+
+  .kpi-label{
+    font-size:12px;
+    color:#5f6b7a;
+  }
+
+  /* =========================
+     TOOLBAR / ENCABEZADO
+  ========================== */
+  .toolbar{
+    background:#fff;
+    border:1px solid #dfe4ea;
+    box-shadow:0 2px 7px rgba(15,23,42,.05);
+    border-radius:3px;
+    padding:14px 16px;
+    margin-bottom:16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+    border-bottom:2px solid #2d9bf0;
+  }
+
+  .toolbar-title{
+    display:flex;
+    gap:9px;
+    align-items:center;
+  }
+
+  .toolbar-title i{
+    font-size:18px;
+    color:#111827;
+  }
+
+  .toolbar h2{
+    margin:0;
+    font-size:20px;
+    font-weight:900;
+    color:#1f2937;
+    text-transform:uppercase;
+  }
+
+  .toolbar small{
+    color:#6b7280;
+    font-size:12px;
+  }
+
+  .toolbar-actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+
+  .search-box{
+    display:flex;
+    gap:8px;
+    min-width:340px;
+  }
+
+  .form-control{
+    border-radius:3px;
+    font-size:13px;
+    padding:9px 11px;
+    border:1px solid #d1d5db;
+  }
+
+  .form-control:focus{
+    border-color:#2d9bf0;
+    box-shadow:0 0 0 .15rem rgba(45,155,240,.15);
+  }
+
+  .btn{
+    border-radius:3px;
+    font-size:13px;
+    font-weight:700;
+    padding:8px 12px;
+  }
+
+  .alert{
+    border-radius:3px;
+    font-size:13px;
+  }
+
+  /* =========================
+     CARD TABLA
+  ========================== */
+  .table-card{
+    background:#fff;
+    border:1px solid #dfe4ea;
+    box-shadow:0 2px 7px rgba(15,23,42,.05);
+    border-radius:3px;
+    overflow:hidden;
+  }
+
+  .table-card-head{
+    min-height:44px;
+    padding:10px 12px;
+    border-bottom:2px solid #2d9bf0;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:#fff;
+  }
+
+  .table-card-title{
+    display:flex;
+    gap:7px;
+    align-items:center;
+  }
+
+  .table-card-title i{
+    color:#111827;
+    font-size:14px;
+  }
+
+  .table-card-title h5{
+    margin:0;
+    font-weight:800;
+    font-size:13px;
+    text-transform:uppercase;
+    color:#1f2937;
+  }
+
+  .table.store{
+    margin:0;
+    border-collapse:separate;
+    border-spacing:0;
+  }
+
+  .table.store thead th{
+    background:#0f3c4c;
+    color:#fff;
+    font-weight:800;
+    font-size:12px;
+    padding:11px 12px;
+    border:0;
+    white-space:nowrap;
+    vertical-align:middle;
+  }
+
+  .table.store tbody td{
+    background:#fff;
+    font-size:12px;
+    padding:11px 12px;
+    border-top:1px solid #e6eaee;
+    vertical-align:middle;
+    color:#374151;
+  }
+
+  .table.store tbody tr:hover td{
+    background:#f8fafc;
+  }
+
+  .product-img{
+    width:45px;
+    height:45px;
+    border-radius:3px;
+    object-fit:cover;
+    border:1px solid #dfe4ea;
+    background:#f1f5f9;
+  }
+
+  .price-text{
+    font-weight:800;
+    color:#1f2937;
+  }
+
+  .stock-badge{
+    display:inline-block;
+    min-width:34px;
+    text-align:center;
+    padding:4px 7px;
+    border-radius:3px;
+    background:#f3f4f6;
+    color:#374151;
+    font-weight:800;
+    font-size:11px;
+  }
+
+  .description-cell{
+    max-width:220px;
+    word-break:break-word;
+    color:#4b5563;
+  }
+
+  /* =========================
+     ACCIONES
+  ========================== */
+  .actions{
+    display:flex;
+    gap:7px;
+    justify-content:flex-end;
+  }
+
+  .iconbtn{
+    width:32px;
+    height:32px;
+    border-radius:3px;
+    border:1px solid #dfe4ea;
+    background:#fff;
+    display:inline-flex;
+    justify-content:center;
+    align-items:center;
+    text-decoration:none;
+    color:#334155;
+    transition:.15s ease;
+  }
+
+  .iconbtn:hover{
+    background:#f8fafc;
+  }
+
+  .iconbtn.edit{
+    color:#2563eb;
+    border-color:#bfdbfe;
+  }
+
+  .iconbtn.edit:hover{
+    background:#eff6ff;
+  }
+
+  .iconbtn.delete{
+    color:#dc2626;
+    border-color:#fecaca;
+  }
+
+  .iconbtn.delete:hover{
+    background:#fef2f2;
+  }
+
+  .empty-row{
+    padding:28px !important;
+    color:#6b7280 !important;
+    font-size:13px !important;
+  }
+
+  @media(max-width:700px){
+    .search-box{
+      min-width:100%;
+      width:100%;
+    }
+
+    .toolbar{
+      align-items:flex-start;
+    }
+
+    .toolbar-actions{
+      width:100%;
+    }
+
+    .toolbar-actions .btn,
+    .toolbar-actions form{
+      width:100%;
+    }
+
+    .toolbar-actions form.search-box{
+      display:flex;
+    }
+
+    .kpi{
+      height:76px;
+    }
+
+    .kpi-left{
+      width:74px;
+      min-width:74px;
+      font-size:27px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-wrap">
+
+
+  <!-- =========================
+       TOOLBAR
+  ========================== -->
+  <div class="toolbar">
+    <div class="toolbar-title">
+      <i class="bi bi-grid-3x3-gap-fill"></i>
+      <div>
+        <h2>Productos</h2>
+        <small> {{ session.company_name }}</small>
+      </div>
+    </div>
+
+    <div class="toolbar-actions">
+
+      <form method="GET" action="/productos" class="search-box">
+        <input 
+          type="text" 
+          name="q" 
+          class="form-control" 
+          placeholder="Buscar por nombre, SKU, categoría o proveedor" 
+          value="{{ q or '' }}"
+        >
+        <button class="btn btn-primary" type="submit">
+          <i class="bi bi-search"></i>
+        </button>
+      </form>
+
+      <a href="/productos/add" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Nuevo
+      </a>
+
+      {% if session.role == "admin_empresa" %}
+        <form method="POST" action="/backups/create" class="m-0">
+          <button type="submit" class="btn btn-dark"
+                  onclick="return confirm('¿Crear backup de los productos actuales?');">
+            <i class="bi bi-database-add"></i> Crear backup
+          </button>
+        </form>
+
+        <a href="/backups" class="btn btn-outline-dark">
+          <i class="bi bi-database"></i> Ver backups
+        </a>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <!-- =========================
+       ALERTAS
+  ========================== -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mb-3">
+        {% for category, msg in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show">
+            {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- =========================
+       TABLA
+  ========================== -->
+  <div class="table-card">
+
+    
+
+    <div class="table-responsive">
+      <table class="table store align-middle">
+        <thead>
+          <tr>
+            <th>Imagen</th>
+            <th>Nombre</th>
+            <th>SKU</th>
+            <th>Categoría</th>
+            <th>Proveedor</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Unidad</th>
+            <th>Descripción</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+        {% if products and products|length > 0 %}
+          {% for p in products %}
+            <tr>
+              <td>
+                {% if p.get('image_path') %}
+                  <img class="product-img" src="{{ url_for('static', filename=p.get('image_path')) }}">
+                {% elif p.get('image_filename') %}
+                  <img class="product-img" src="{{ url_for('static', filename='uploads/' ~ session.company_id ~ '/products/' ~ p.get('image_filename')) }}">
+                {% else %}
+                  <img class="product-img" src="{{ url_for('static', filename='img/no-image.png') }}">
+                {% endif %}
+              </td>
+
+              <td><strong>{{ p.get('name','') }}</strong></td>
+              <td>{{ p.get('sku','') }}</td>
+              <td>{{ p.get('category','') }}</td>
+              <td>{{ p.get('provider','') }}</td>
+              <td>
+                <span class="price-text">
+                  ${{ "%.2f"|format(p.get('price',0)|float) }}
+                </span>
+              </td>
+              <td>
+                <span class="stock-badge">
+                  {{ p.get('stock',0) }}
+                </span>
+              </td>
+              <td>{{ p.get('unit','') }}</td>
+              <td class="description-cell">
+                {{ p.get('description','') }}
+              </td>
+
+              <td>
+                <div class="actions">
+                  <a href="/products/{{ p.get('_id') }}/edit" class="iconbtn edit" title="Editar">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+
+                  <form method="POST" action="/products/{{ p.get('_id') }}/delete" class="m-0"
+                        onsubmit="return confirm('¿Seguro que deseas eliminar este producto?');">
+                    <button type="submit" class="iconbtn delete" title="Eliminar">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="10" class="text-center empty-row">
+              No hay productos registrados para esta empresa.
+            </td>
+          </tr>
+        {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

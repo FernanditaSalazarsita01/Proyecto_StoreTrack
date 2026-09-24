@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}STORE TRACK | Editar Cliente{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-card{
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--panel-shadow);
+    border-radius:16px;
+    padding:22px;
+  }
+
+  .form-title{
+    margin-bottom:18px;
+  }
+
+  .form-title h2{
+    margin:0;
+    font-size:22px;
+    font-weight:900;
+  }
+
+  .form-title small{
+    color:var(--muted);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="form-card">
+
+  <div class="form-title">
+    <h2>Editar cliente</h2>
+    <small>Actualizar información del cliente seleccionado.</small>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mb-3">
+        {% for category, msg in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show">
+            {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <form method="POST" action="/clientes/{{ client.get('_id') }}/edit">
+
+    <div class="row g-3">
+
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Nombre del cliente *</label>
+        <input 
+          type="text" 
+          name="name" 
+          class="form-control" 
+          value="{{ client.get('name','') }}" 
+          required
+        >
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Correo</label>
+        <input 
+          type="email" 
+          name="email" 
+          class="form-control" 
+          value="{{ client.get('email','') }}"
+        >
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Teléfono</label>
+        <input 
+          type="text" 
+          name="phone" 
+          class="form-control" 
+          value="{{ client.get('phone','') }}"
+        >
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label fw-bold">Dirección</label>
+        <input 
+          type="text" 
+          name="address" 
+          class="form-control" 
+          value="{{ client.get('address','') }}"
+        >
+      </div>
+
+      <div class="col-12">
+        <label class="form-label fw-bold">Notas</label>
+        <textarea name="notes" class="form-control" rows="3">{{ client.get('notes','') }}</textarea>
+      </div>
+
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+      <a href="/clientes" class="btn btn-secondary">
+        Cancelar
+      </a>
+
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-save"></i> Actualizar cliente
+      </button>
+    </div>
+
+  </form>
+
+</div>
+
+{% endblock %}

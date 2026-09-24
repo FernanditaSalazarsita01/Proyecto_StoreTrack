@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+
+{% block title %}STORE TRACK | Clientes{% endblock %}
+
+{% block extra_css %}
+<style>
+  .table-card{
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--panel-shadow);
+    border-radius:14px;
+    overflow:hidden;
+  }
+
+  .toolbar{
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--panel-shadow);
+    border-radius:14px;
+    padding:16px;
+    margin-bottom:16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .toolbar h2{
+    margin:0;
+    font-size:22px;
+    font-weight:900;
+  }
+
+  .toolbar small{
+    color:var(--muted);
+  }
+
+  .search-box{
+    display:flex;
+    gap:8px;
+    min-width:320px;
+  }
+
+  .toolbar-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:flex-end;
+  }
+
+  .table.store{
+    margin:0;
+    border-collapse:separate;
+    border-spacing:0;
+  }
+
+  .table.store thead th{
+    background:#0f3c4c;
+    color:#fff;
+    font-weight:800;
+    font-size:12px;
+    padding:11px 12px;
+    border:0;
+    white-space:nowrap;
+  }
+
+  .table.store tbody td{
+    background:#fff;
+    font-size:12px;
+    padding:11px 12px;
+    border-top:1px solid #e6eaee;
+    vertical-align:middle;
+  }
+
+  .table.store tbody tr:hover td{
+    background:#f8fafc;
+  }
+
+  .client-avatar{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    background:var(--brand);
+    color:#fff;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:900;
+  }
+
+  .actions{
+    display:flex;
+    gap:8px;
+    justify-content:flex-end;
+  }
+
+  .iconbtn{
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    border:1px solid #e6eaee;
+    background:#fff;
+    display:inline-flex;
+    justify-content:center;
+    align-items:center;
+    text-decoration:none;
+    color:#334155;
+  }
+
+  .iconbtn:hover{
+    background:#f1f5f9;
+  }
+
+  .iconbtn.edit{
+    color:#2563eb;
+  }
+
+  .iconbtn.delete{
+    color:#dc2626;
+  }
+
+  .dropdown-menu{
+    border-radius:12px;
+    border:1px solid var(--border);
+    box-shadow:var(--shadow);
+  }
+
+  @media(max-width:700px){
+    .search-box{
+      min-width:100%;
+      width:100%;
+    }
+
+    .toolbar-actions{
+      width:100%;
+      justify-content:flex-start;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="toolbar">
+  <div>
+    <h2>Clientes</h2>
+    <small>Clientes registrados para la empresa: {{ session.company_name }}</small>
+  </div>
+
+  <div class="toolbar-actions">
+
+    <form method="GET" action="/clientes" class="search-box">
+      <input 
+        type="text" 
+        name="q" 
+        class="form-control" 
+        placeholder="Buscar por nombre, correo, teléfono o dirección" 
+        value="{{ q or '' }}"
+      >
+
+      <button class="btn btn-primary" type="submit">
+        <i class="bi bi-search"></i>
+      </button>
+    </form>
+
+    <a href="/clientes/add" class="btn btn-success">
+      <i class="bi bi-person-plus"></i> Nuevo
+    </a>
+
+    <div class="dropdown">
+      <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        <i class="bi bi-download"></i> Exportar
+      </button>
+
+      <ul class="dropdown-menu">
+        <li>
+          <a class="dropdown-item" href="/clientes/export/pdf">
+            <i class="bi bi-file-earmark-pdf me-2"></i>PDF
+          </a>
+        </li>
+
+        <li>
+          <a class="dropdown-item" href="/clientes/export/xlsx">
+            <i class="bi bi-file-earmark-excel me-2"></i>Excel
+          </a>
+        </li>
+
+        <li>
+          <a class="dropdown-item" href="/clientes/export/json">
+            <i class="bi bi-filetype-json me-2"></i>JSON
+          </a>
+        </li>
+
+        <li>
+          <a class="dropdown-item" href="/clientes/export/sql">
+            <i class="bi bi-filetype-sql me-2"></i>SQL
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <button class="btn btn-outline-success" type="button" data-bs-toggle="modal" data-bs-target="#importClientsModal">
+      <i class="bi bi-upload"></i> Importar
+    </button>
+
+    <form method="POST" action="/clientes/backups/create" class="m-0"
+          onsubmit="return confirm('¿Crear backup de los clientes actuales?');">
+      <button type="submit" class="btn btn-dark">
+        <i class="bi bi-database-add"></i> Backup
+      </button>
+    </form>
+
+    <a href="/clientes/backups" class="btn btn-outline-dark">
+      <i class="bi bi-database"></i> Ver backups
+    </a>
+
+  </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="mb-3">
+      {% for category, msg in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show">
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table store align-middle">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Nombre</th>
+          <th>Correo</th>
+          <th>Teléfono</th>
+          <th>Dirección</th>
+          <th>Notas</th>
+          <th class="text-end">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      {% if clients and clients|length > 0 %}
+        {% for c in clients %}
+          <tr>
+            <td>
+              <div class="client-avatar">
+                {{ (c.get('name','C')[:1])|upper }}
+              </div>
+            </td>
+
+            <td>
+              <strong>{{ c.get('name','') }}</strong>
+            </td>
+
+            <td>
+              {% if c.get('email') %}
+                <a href="mailto:{{ c.get('email') }}" class="text-decoration-none">
+                  {{ c.get('email') }}
+                </a>
+              {% else %}
+                <span class="text-muted">Sin correo</span>
+              {% endif %}
+            </td>
+
+            <td>
+              {% if c.get('phone') %}
+                {{ c.get('phone') }}
+              {% else %}
+                <span class="text-muted">Sin teléfono</span>
+              {% endif %}
+            </td>
+
+            <td style="max-width:260px; word-break:break-word;">
+              {{ c.get('address','') if c.get('address') else 'Sin dirección' }}
+            </td>
+
+            <td style="max-width:220px; word-break:break-word;">
+              {{ c.get('notes','') if c.get('notes') else '-' }}
+            </td>
+
+            <td>
+              <div class="actions">
+                <a href="/clientes/{{ c.get('_id') }}/edit" class="iconbtn edit" title="Editar">
+                  <i class="bi bi-pencil"></i>
+                </a>
+
+                <form method="POST" action="/clientes/{{ c.get('_id') }}/delete" class="m-0"
+                      onsubmit="return confirm('¿Seguro que deseas eliminar este cliente?');">
+                  <button type="submit" class="iconbtn delete" title="Eliminar">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">
+            No hay clientes registrados para esta empresa.
+          </td>
+        </tr>
+      {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal fade" id="importClientsModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-upload me-2"></i>Importar clientes
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form method="POST" action="/clientes/import" enctype="multipart/form-data">
+
+        <div class="modal-body">
+          <p class="text-muted small mb-3">
+            Puedes importar clientes desde archivos PDF, Excel, JSON o SQL.
+          </p>
+
+          <input 
+            type="file" 
+            name="file" 
+            class="form-control" 
+            accept=".pdf,.xlsx,.json,.sql" 
+            required
+          >
+
+          <div class="alert alert-info mt-3 mb-0 small">
+            <strong>Formato recomendado para Excel:</strong><br>
+            name, email, phone, address, notes
+            <br><br>
+
+            <strong>También acepta encabezados en español:</strong><br>
+            nombre, correo, teléfono, dirección, notas
+            <br><br>
+
+            <strong>Para PDF:</strong><br>
+            Nombre | Correo | Teléfono | Dirección | Notas
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button type="submit" class="btn btn-success btn-sm">
+            <i class="bi bi-upload"></i> Importar
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}STORE TRACK | Ventas{% endblock %}
+
+{% block extra_css %}
+<style>
+  .sales-header{
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--panel-shadow);
+    border-radius:14px;
+    padding:18px;
+    margin-bottom:18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .sales-header h2{
+    margin:0;
+    font-weight:900;
+  }
+
+  .sales-header small{
+    color:var(--muted);
+  }
+
+  .table-card{
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--panel-shadow);
+    border-radius:14px;
+    overflow:hidden;
+  }
+
+  .table.sales{
+    margin:0;
+    border-collapse:separate;
+    border-spacing:0;
+  }
+
+  .table.sales thead th{
+    background:#0f3c4c;
+    color:white;
+    font-size:12px;
+    font-weight:800;
+    padding:12px;
+    border:0;
+    white-space:nowrap;
+  }
+
+  .table.sales tbody td{
+    font-size:12px;
+    padding:12px;
+    vertical-align:middle;
+    border-top:1px solid #e6eaee;
+  }
+
+  .table.sales tbody tr:hover td{
+    background:#f8fafc;
+  }
+
+  .badge-total{
+    background:#dcfce7;
+    color:#166534;
+    font-weight:900;
+    padding:6px 10px;
+    border-radius:999px;
+    display:inline-block;
+  }
+
+  .items-list{
+    margin:0;
+    padding-left:16px;
+  }
+
+  .items-list li{
+    margin-bottom:3px;
+  }
+
+  .empty-box{
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--panel-shadow);
+    border-radius:14px;
+    padding:22px;
+    text-align:center;
+    color:var(--muted);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="sales-header">
+  <div>
+    <h2>Ventas</h2>
+    <small>Historial de ventas de {{ session.company_name }}</small>
+  </div>
+
+  <a href="/nueva-venta" class="btn btn-success">
+    <i class="bi bi-cart-plus"></i> Nueva venta
+  </a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="mb-3">
+      {% for category, msg in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show">
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+{% if sales and sales|length > 0 %}
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table sales align-middle">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Cliente</th>
+          <th>Contacto</th>
+          <th>Productos</th>
+          <th>Total</th>
+          <th>Registró</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for s in sales %}
+        <tr>
+          <td>{{ s.get("created_at") }}</td>
+
+          <td>
+            <strong>{{ s.get("customer", {}).get("name", "") }}</strong>
+            <br>
+            <small class="text-muted">
+              {{ s.get("customer", {}).get("address", "") }}
+            </small>
+          </td>
+
+          <td>
+            {{ s.get("customer", {}).get("phone", "") }}
+          </td>
+
+          <td>
+            {% if s.get("items") %}
+              <ul class="items-list">
+                {% for item in s.get("items", []) %}
+                  <li>
+                    {{ item.get("name", "") }}
+                    x {{ item.get("qty", 0) }}
+                    — ${{ "%.2f"|format(item.get("line_total", 0)|float) }}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <span class="text-muted">Sin detalle</span>
+            {% endif %}
+          </td>
+
+          <td>
+            <span class="badge-total">
+              ${{ "%.2f"|format(s.get("total", 0)|float) }}
+            </span>
+          </td>
+
+          <td>{{ s.get("created_by_name", "") }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="empty-box">
+  <h5 class="mb-2">Aún no hay ventas registradas</h5>
+  <p class="mb-3">Cuando registres ventas, aparecerán aquí.</p>
+
+  <a href="/nueva-venta" class="btn btn-success">
+    <i class="bi bi-cart-plus"></i> Crear primera venta
+  </a>
+</div>
+{% endif %}
+
+{% endblock %}

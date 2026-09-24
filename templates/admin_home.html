@@ -1,0 +1,573 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --danger: #dc2626;
+    --dark: #0f172a;
+    --muted: #64748b;
+    --border: #e5e7eb;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    --shadow-hover: 0 18px 45px rgba(15, 23, 42, 0.14);
+  }
+
+  .admin-page {
+    background: var(--bg);
+    min-height: calc(100vh - 80px);
+    padding: 28px;
+  }
+
+  .admin-header {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0f172a, #2563eb);
+    color: white;
+    border-radius: 24px;
+    padding: 32px;
+    margin-bottom: 26px;
+    box-shadow: var(--shadow);
+  }
+
+  .admin-header::after {
+    content: "";
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    right: -80px;
+    top: -90px;
+  }
+
+  .admin-header-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 13px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+
+  .admin-title {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .admin-subtitle {
+    margin: 10px 0 0;
+    max-width: 720px;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  .admin-info-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 22px;
+  }
+
+  .admin-info-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.14);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .section-grid {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 22px;
+    margin-bottom: 28px;
+  }
+
+  .admin-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .card-header-custom {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .card-title-custom {
+    margin: 0;
+    color: var(--dark);
+    font-size: 1.2rem;
+    font-weight: 800;
+  }
+
+  .card-description {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .card-icon {
+    min-width: 48px;
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, var(--primary), #4f46e5);
+    color: white;
+    font-size: 20px;
+  }
+
+  .form-admin {
+    display: grid;
+    gap: 14px;
+  }
+
+  .form-group-custom label {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--dark);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .form-control-custom {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-size: 14px;
+    color: var(--dark);
+    background: #fff;
+    outline: none;
+    transition: 0.2s ease;
+  }
+
+  .form-control-custom:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+  }
+
+  .btn-admin {
+    border: none;
+    border-radius: 14px;
+    padding: 13px 18px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s ease;
+  }
+
+  .btn-admin:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .users-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .users-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 14px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+
+  .users-table th {
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .users-table td {
+    color: var(--dark);
+  }
+
+  .role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: capitalize;
+  }
+
+  .empty-state {
+    padding: 28px;
+    border: 1px dashed var(--border);
+    border-radius: 18px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .plans-section {
+    margin-top: 8px;
+  }
+
+  .plans-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .plans-title {
+    margin: 0;
+    color: var(--dark);
+    font-size: 1.7rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+  }
+
+  .plans-subtitle {
+    margin: 8px auto 0;
+    max-width: 680px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+
+  .plan-card {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 26px;
+    box-shadow: var(--shadow);
+    transition: 0.22s ease;
+  }
+
+  .plan-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .plan-card.featured {
+    border: 2px solid var(--primary);
+    transform: scale(1.02);
+  }
+
+  .plan-card.featured:hover {
+    transform: scale(1.02) translateY(-6px);
+  }
+
+  .featured-label {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary);
+    color: white;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .plan-name {
+    margin: 0;
+    color: var(--dark);
+    font-size: 1.25rem;
+    font-weight: 900;
+  }
+
+  .plan-desc {
+    margin: 8px 0 18px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 46px;
+  }
+
+  .plan-price {
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    margin-bottom: 20px;
+  }
+
+  .plan-price strong {
+    color: var(--dark);
+    font-size: 2.1rem;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+  }
+
+  .plan-price span {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 7px;
+  }
+
+  .plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 22px;
+    display: grid;
+    gap: 12px;
+  }
+
+  .plan-features li {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--dark);
+    font-size: 14px;
+  }
+
+  .plan-features li::before {
+    content: "✓";
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgba(22, 163, 74, 0.12);
+    color: var(--success);
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .btn-plan {
+    display: block;
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 14px;
+    padding: 13px 16px;
+    font-weight: 900;
+    background: #eef2ff;
+    color: var(--primary);
+    transition: 0.2s ease;
+  }
+
+  .btn-plan:hover {
+    background: #dbeafe;
+    text-decoration: none;
+  }
+
+  .btn-plan.primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+  }
+
+  .btn-plan.primary:hover {
+    box-shadow: var(--shadow-hover);
+  }
+
+  @media (max-width: 1100px) {
+    .section-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .plans-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .plan-card.featured {
+      transform: none;
+    }
+
+    .plan-card.featured:hover {
+      transform: translateY(-6px);
+    }
+  }
+
+  @media (max-width: 700px) {
+    .admin-page {
+      padding: 18px;
+    }
+
+    .admin-header {
+      padding: 24px;
+      border-radius: 20px;
+    }
+
+    .admin-title {
+      font-size: 1.6rem;
+    }
+
+    .admin-card,
+    .plan-card {
+      padding: 20px;
+      border-radius: 20px;
+    }
+  }
+</style>
+
+<div class="admin-page">
+
+  <section class="admin-header">
+    <div class="admin-header-content">
+      <div class="admin-badge">
+        Panel administrador
+      </div>
+
+      <h1 class="admin-title">Bienvenido a STORE TRACK</h1>
+
+      <p class="admin-subtitle">
+        Administra los usuarios de tu empresa, revisa el acceso al sistema y consulta los planes disponibles para ampliar las funciones de la plataforma.
+      </p>
+
+      <div class="admin-info-grid">
+        <div class="admin-info-pill">
+          Empresa: {{ session.company_name }}
+        </div>
+
+        <div class="admin-info-pill">
+          Administrador: {{ session.user_name }}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-grid">
+
+    <div class="admin-card">
+      <div class="card-header-custom">
+        <div>
+          <h2 class="card-title-custom">Crear usuario</h2>
+          <p class="card-description">
+            Agrega nuevos usuarios para que puedan acceder al entorno de tu empresa.
+          </p>
+        </div>
+
+        <div class="card-icon">
+          +
+        </div>
+      </div>
+
+      <form method="POST" action="/create-user" class="form-admin">
+        <div class="form-group-custom">
+          <label>Nombre</label>
+          <input 
+            class="form-control-custom"
+            type="text" 
+            name="name" 
+            placeholder="Nombre del usuario"
+            required
+          >
+        </div>
+
+        <div class="form-group-custom">
+          <label>Correo electrónico</label>
+          <input 
+            class="form-control-custom"
+            type="email" 
+            name="email" 
+            placeholder="correo@empresa.com"
+            required
+          >
+        </div>
+
+        <div class="form-group-custom">
+          <label>Contraseña</label>
+          <input 
+            class="form-control-custom"
+            type="password" 
+            name="password" 
+            placeholder="Contraseña temporal"
+            required
+          >
+        </div>
+
+        <button type="submit" class="btn-admin">
+          Crear usuario
+        </button>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <div class="card-header-custom">
+        <div>
+          <h2 class="card-title-custom">Usuarios empresa</h2>
+          <p class="card-description">
+            Usuarios registrados actualmente en esta empresa.
+          </p>
+        </div>
+
+        <div class="card-icon">
+          👥
+        </div>
+      </div>
+
+      {% if users %}
+      <div class="users-table-wrapper">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Rol</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for user in users %}
+            <tr>
+              <td>{{ user.name }}</td>
+              <td>{{ user.email }}</td>
+              <td>
+                <span class="role-badge">{{ user.role }}</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        Aún no hay usuarios registrados para esta empresa.
+      </div>
+      {% endif %}
+    </div>
+
+  
+</div>
+
+{% endblock %}

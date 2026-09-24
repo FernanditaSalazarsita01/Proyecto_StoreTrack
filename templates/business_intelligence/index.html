@@ -1,0 +1,1534 @@
+{% extends "base.html" %}
+
+{% block title %}Inteligencia de negocio{% endblock %}
+
+{% block content %}
+<style>
+  :root {
+    --bi-primary: #2563eb;
+    --bi-primary-soft: rgba(37, 99, 235, 0.10);
+    --bi-purple: #7c3aed;
+    --bi-success: #16a34a;
+    --bi-warning: #f59e0b;
+    --bi-danger: #dc2626;
+    --bi-info: #0891b2;
+    --bi-dark: #0f172a;
+    --bi-muted: #64748b;
+    --bi-border: rgba(148, 163, 184, 0.22);
+    --bi-surface: rgba(255, 255, 255, 0.92);
+    --bi-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+  }
+
+  .bi-page {
+    position: relative;
+  }
+
+  .bi-page::before {
+    content: "";
+    position: absolute;
+    top: -120px;
+    right: -100px;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      rgba(37, 99, 235, 0.10),
+      transparent 68%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .bi-page > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .bi-hero {
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    border: 0;
+    background:
+      radial-gradient(
+        circle at 85% 10%,
+        rgba(255,255,255,.22),
+        transparent 23%
+      ),
+      radial-gradient(
+        circle at 70% 120%,
+        rgba(14,165,233,.30),
+        transparent 38%
+      ),
+      linear-gradient(135deg, #1d4ed8 0%, #4f46e5 52%, #7c3aed 100%);
+    box-shadow: 0 24px 60px rgba(37, 99, 235, 0.22);
+  }
+
+  .bi-hero::after {
+    content: "";
+    position: absolute;
+    right: -60px;
+    bottom: -95px;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    border: 42px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .bi-hero-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .bi-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .45rem .8rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,.16);
+    border: 1px solid rgba(255,255,255,.24);
+    backdrop-filter: blur(10px);
+    font-size: .78rem;
+    font-weight: 700;
+  }
+
+  .bi-hero-title {
+    font-size: clamp(1.75rem, 4vw, 2.65rem);
+    font-weight: 800;
+    letter-spacing: -.04em;
+  }
+
+  .bi-hero-description {
+    max-width: 720px;
+    color: rgba(255,255,255,.82);
+  }
+
+  .bi-company-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .65rem 1rem;
+    background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 1rem;
+    backdrop-filter: blur(12px);
+  }
+
+  .bi-company-icon {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: rgba(255,255,255,.18);
+  }
+
+  .bi-panel,
+  .bi-kpi {
+    border: 1px solid var(--bi-border);
+    border-radius: 1.25rem;
+    background: var(--bi-surface);
+    box-shadow: var(--bi-shadow);
+  }
+
+  .bi-kpi {
+    overflow: hidden;
+    transition:
+      transform .2s ease,
+      box-shadow .2s ease,
+      border-color .2s ease;
+  }
+
+  .bi-kpi:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 50px rgba(15, 23, 42, 0.12);
+    border-color: rgba(37, 99, 235, 0.22);
+  }
+
+  .bi-kpi-body {
+    position: relative;
+    padding: 1.25rem;
+  }
+
+  .bi-kpi-body::after {
+    content: "";
+    position: absolute;
+    right: -22px;
+    bottom: -36px;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: var(--kpi-soft);
+  }
+
+  .bi-kpi-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .bi-kpi-icon {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 15px;
+    background: var(--kpi-soft);
+    color: var(--kpi-color);
+    font-size: 1.25rem;
+  }
+
+  .bi-kpi-label {
+    color: var(--bi-muted);
+    font-size: .76rem;
+    font-weight: 700;
+    letter-spacing: .035em;
+    text-transform: uppercase;
+  }
+
+  .bi-kpi-value {
+    position: relative;
+    z-index: 1;
+    margin-top: .85rem;
+    margin-bottom: .15rem;
+    color: var(--bi-dark);
+    font-size: clamp(1.35rem, 2vw, 1.8rem);
+    font-weight: 800;
+    letter-spacing: -.035em;
+  }
+
+  .bi-kpi-caption {
+    position: relative;
+    z-index: 1;
+    color: var(--bi-muted);
+    font-size: .8rem;
+  }
+
+  .bi-panel-header {
+    padding: 1.3rem 1.4rem 1rem;
+    border-bottom: 1px solid var(--bi-border);
+  }
+
+  .bi-panel-title {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+  }
+
+  .bi-panel-icon {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 13px;
+    background: var(--bi-primary-soft);
+    color: var(--bi-primary);
+    font-size: 1.05rem;
+  }
+
+  .bi-panel-title h5 {
+    color: var(--bi-dark);
+  }
+
+  .bi-panel-subtitle {
+    color: var(--bi-muted);
+    font-size: .83rem;
+  }
+
+  .bi-table-wrap {
+    max-height: 430px;
+    overflow: auto;
+  }
+
+  .bi-smart-table {
+    margin: 0;
+  }
+
+  .bi-smart-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: .9rem .9rem;
+    border-bottom: 1px solid var(--bi-border);
+    background: #f8fafc;
+    color: #475569;
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .bi-smart-table tbody td {
+    padding: .95rem .9rem;
+    border-color: rgba(148,163,184,.15);
+    vertical-align: middle;
+  }
+
+  .bi-smart-table tbody tr {
+    transition: background-color .15s ease;
+  }
+
+  .bi-smart-table tbody tr:hover {
+    background: rgba(37,99,235,.035);
+  }
+
+  .bi-product-cell {
+    min-width: 190px;
+  }
+
+  .bi-product-avatar {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 12px;
+    background: linear-gradient(
+      135deg,
+      rgba(37,99,235,.12),
+      rgba(124,58,237,.12)
+    );
+    color: var(--bi-primary);
+  }
+
+  .bi-stock-value {
+    min-width: 38px;
+    height: 34px;
+    display: inline-grid;
+    place-items: center;
+    padding: 0 .65rem;
+    border-radius: 10px;
+    background: #f1f5f9;
+    color: var(--bi-dark);
+    font-weight: 800;
+  }
+
+  .bi-risk-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .38rem .65rem;
+    border-radius: 999px;
+    font-size: .72rem;
+    font-weight: 800;
+  }
+
+  .bi-risk-badge::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .bi-risk-critical,
+  .bi-risk-crítico {
+    background: rgba(220,38,38,.10);
+    color: #dc2626;
+  }
+
+  .bi-risk-high,
+  .bi-risk-alto {
+    background: rgba(249,115,22,.11);
+    color: #ea580c;
+  }
+
+  .bi-risk-medium,
+  .bi-risk-medio {
+    background: rgba(245,158,11,.12);
+    color: #d97706;
+  }
+
+  .bi-risk-low,
+  .bi-risk-bajo {
+    background: rgba(22,163,74,.10);
+    color: #16a34a;
+  }
+
+  .bi-suggestion {
+    color: #2563eb;
+    font-size: .82rem;
+    font-weight: 700;
+  }
+
+  .bi-empty-state {
+    padding: 4rem 1rem;
+    text-align: center;
+    color: var(--bi-muted);
+  }
+
+  .bi-empty-icon {
+    width: 70px;
+    height: 70px;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 1rem;
+    border-radius: 22px;
+    background: rgba(22,163,74,.10);
+    color: #16a34a;
+    font-size: 1.8rem;
+  }
+
+  .bi-chat-card {
+    overflow: hidden;
+    background:
+      linear-gradient(
+        180deg,
+        rgba(248,250,252,.92),
+        rgba(255,255,255,.98)
+      );
+  }
+
+  .bi-chat-status {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .4rem .7rem;
+    border-radius: 999px;
+    background: rgba(22,163,74,.10);
+    color: #15803d;
+    font-size: .72rem;
+    font-weight: 800;
+  }
+
+  .bi-chat-status::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 4px rgba(34,197,94,.15);
+  }
+
+  .bi-chat-suggestions {
+    display: flex;
+    gap: .5rem;
+    padding-bottom: .3rem;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .bi-chat-suggestion {
+    flex: 0 0 auto;
+    padding: .45rem .72rem;
+    border: 1px solid rgba(37,99,235,.18);
+    border-radius: 999px;
+    background: #fff;
+    color: #315bba;
+    font-size: .75rem;
+    font-weight: 700;
+    transition: all .18s ease;
+  }
+
+  .bi-chat-suggestion:hover {
+    border-color: var(--bi-primary);
+    background: var(--bi-primary);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+
+  .bi-chat-box {
+    height: 420px;
+    overflow-y: auto;
+    padding: 1rem;
+    border: 1px solid var(--bi-border);
+    border-radius: 1rem;
+    background:
+      radial-gradient(
+        circle at 95% 0,
+        rgba(37,99,235,.055),
+        transparent 30%
+      ),
+      #f8fafc;
+    scrollbar-width: thin;
+  }
+
+  .bi-message {
+    display: flex;
+    gap: .6rem;
+    margin-bottom: .9rem;
+  }
+
+  .bi-message-user {
+    justify-content: flex-end;
+  }
+
+  .bi-message-avatar {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: #fff;
+    font-size: .83rem;
+  }
+
+  .bi-message-bubble {
+    max-width: 88%;
+    padding: .8rem .9rem;
+    border: 1px solid rgba(148,163,184,.16);
+    border-radius: .95rem .95rem .95rem .25rem;
+    background: #fff;
+    color: #334155;
+    box-shadow: 0 .25rem .8rem rgba(15,23,42,.05);
+    font-size: .88rem;
+    line-height: 1.52;
+    white-space: pre-line;
+  }
+
+  .bi-message-user .bi-message-bubble {
+    border: 0;
+    border-radius: .95rem .95rem .25rem .95rem;
+    background: linear-gradient(135deg, #2563eb, #4f46e5);
+    color: #fff;
+  }
+
+  .bi-result-card {
+    margin: -.2rem 0 .9rem 2.6rem;
+    padding: .35rem .8rem;
+    border: 1px solid var(--bi-border);
+    border-radius: .85rem;
+    background: #fff;
+  }
+
+  .bi-result-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .6rem 0;
+    border-bottom: 1px solid rgba(148,163,184,.14);
+    font-size: .82rem;
+  }
+
+  .bi-result-row:last-child {
+    border-bottom: 0;
+  }
+
+  .bi-chat-form-wrap {
+    padding: .55rem;
+    border: 1px solid var(--bi-border);
+    border-radius: 1rem;
+    background: #fff;
+    box-shadow: 0 .35rem 1rem rgba(15,23,42,.05);
+  }
+
+  .bi-chat-input {
+    min-height: 44px;
+    border: 0;
+    box-shadow: none !important;
+  }
+
+  .bi-chat-send {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border: 0;
+    border-radius: 13px !important;
+    background: linear-gradient(135deg, #2563eb, #4f46e5);
+    box-shadow: 0 9px 20px rgba(37,99,235,.22);
+  }
+
+  .bi-ranking-card {
+    overflow: hidden;
+  }
+
+  .bi-ranking-list {
+    padding: .25rem 1.25rem 1.25rem;
+  }
+
+  .bi-ranking-item {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    padding: .85rem 0;
+    border-bottom: 1px solid rgba(148,163,184,.16);
+  }
+
+  .bi-ranking-item:last-child {
+    border-bottom: 0;
+  }
+
+  .bi-ranking-number {
+    width: 31px;
+    height: 31px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 10px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: .78rem;
+    font-weight: 800;
+  }
+
+  .bi-ranking-item:first-child .bi-ranking-number {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    color: #fff;
+  }
+
+  .bi-ranking-content {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .bi-ranking-name {
+    overflow: hidden;
+    color: var(--bi-dark);
+    font-size: .88rem;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .bi-ranking-meta {
+    color: var(--bi-muted);
+    font-size: .75rem;
+  }
+
+  .bi-ranking-value {
+    flex: 0 0 auto;
+    color: var(--bi-dark);
+    font-size: .83rem;
+    font-weight: 800;
+  }
+
+  .bi-ranking-badge {
+    padding: .36rem .58rem;
+    border-radius: 999px;
+    background: var(--bi-primary-soft);
+    color: var(--bi-primary);
+    font-size: .72rem;
+    font-weight: 800;
+  }
+
+  .bi-section-heading {
+    margin-bottom: 1rem;
+  }
+
+  .bi-section-heading h4 {
+    color: var(--bi-dark);
+    font-weight: 800;
+    letter-spacing: -.025em;
+  }
+
+  .bi-section-heading p {
+    color: var(--bi-muted);
+  }
+
+  @media (max-width: 1199.98px) {
+    .bi-chat-box {
+      height: 390px;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .bi-hero {
+      border-radius: 1.25rem !important;
+    }
+
+    .bi-hero-title {
+      font-size: 1.8rem;
+    }
+
+    .bi-kpi-body {
+      padding: 1rem;
+    }
+
+    .bi-kpi-icon {
+      width: 42px;
+      height: 42px;
+    }
+
+    .bi-chat-box {
+      height: 360px;
+    }
+
+    .bi-smart-table thead th,
+    .bi-smart-table tbody td {
+      padding-left: .7rem;
+      padding-right: .7rem;
+    }
+  }
+</style>
+<style>
+  /* Pantalla principal sin contenedores innecesarios */
+  .bi-page {
+    height: calc(100vh - 122px);
+    min-height: 610px;
+    overflow: hidden;
+  }
+
+  .bi-main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1rem;
+    height: 100%;
+  }
+
+  .bi-main-grid > section,
+  .bi-main-grid > aside {
+    min-width: 0;
+    min-height: 0;
+  }
+
+  /* CHAT: ocupa 50% y toda la altura disponible */
+  .bi-chat-screen {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .bi-chat-screen .bi-panel-header {
+    flex: 0 0 auto;
+    padding: .9rem 1rem;
+  }
+
+  .bi-chat-screen .card-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: .9rem !important;
+  }
+
+  .bi-chat-screen .bi-chat-suggestions {
+    flex: 0 0 auto;
+    margin-bottom: .65rem !important;
+  }
+
+  .bi-chat-screen .bi-chat-box {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    margin-bottom: .7rem !important;
+  }
+
+  .bi-chat-screen form {
+    flex: 0 0 auto;
+  }
+
+  /* El botón de envío muestra únicamente el ícono */
+  #bi-chat-submit {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    padding: 0 !important;
+    font-size: 0 !important;
+    display: inline-grid;
+    place-items: center;
+    overflow: hidden;
+  }
+
+  #bi-chat-submit i {
+    font-size: 1rem !important;
+    line-height: 1;
+    margin: 0 !important;
+  }
+
+  /* LADO DERECHO: solo tarjetas compactas, sin otra “burbuja” envolvente */
+  .bi-dashboard-side {
+    height: 100%;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: .75rem;
+  }
+
+  .bi-side-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: .15rem .1rem;
+  }
+
+  .bi-side-heading h5 {
+    margin: 0;
+    color: var(--bi-dark);
+    font-weight: 800;
+  }
+
+  .bi-side-heading p {
+    margin: .15rem 0 0;
+    color: var(--bi-muted);
+    font-size: .78rem;
+  }
+
+  .bi-click-kpis {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    gap: .7rem;
+    min-height: 0;
+  }
+
+  .bi-click-kpi {
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid var(--bi-border);
+    border-radius: 1rem;
+    background: var(--bi-surface);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, .06);
+    padding: .85rem;
+    text-align: left;
+    cursor: pointer;
+    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bi-click-kpi:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(15, 23, 42, .10);
+    border-color: color-mix(in srgb, var(--kpi-color) 32%, transparent);
+  }
+
+  .bi-click-kpi::after {
+    content: "";
+    position: absolute;
+    width: 92px;
+    height: 92px;
+    right: -30px;
+    bottom: -38px;
+    border-radius: 50%;
+    background: var(--kpi-soft);
+  }
+
+  .bi-click-kpi-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: .6rem;
+  }
+
+  .bi-click-kpi-icon {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 11px;
+    background: var(--kpi-soft);
+    color: var(--kpi-color);
+    font-size: 1rem;
+  }
+
+  .bi-click-kpi-label {
+    color: var(--bi-muted);
+    font-size: .66rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  .bi-click-kpi-value {
+    position: relative;
+    z-index: 1;
+    margin-top: .45rem;
+    color: var(--bi-dark);
+    font-size: clamp(1.05rem, 1.6vw, 1.42rem);
+    font-weight: 850;
+    line-height: 1.1;
+  }
+
+  .bi-click-kpi-caption {
+    position: relative;
+    z-index: 1;
+    margin-top: .18rem;
+    color: var(--bi-muted);
+    font-size: .7rem;
+    line-height: 1.25;
+  }
+
+  .bi-click-kpi-action {
+    position: absolute;
+    right: .7rem;
+    top: .7rem;
+    color: var(--kpi-color);
+    font-size: .75rem;
+    font-weight: 800;
+  }
+
+  /* Modal de detalle */
+  .bi-detail-modal .modal-dialog {
+    max-width: min(980px, 94vw);
+  }
+
+  .bi-detail-modal .modal-content {
+    border-radius: 1.25rem;
+    overflow: hidden;
+  }
+
+  .bi-detail-modal .modal-header {
+    border: 0;
+    padding: 1rem 1.2rem;
+    background: linear-gradient(135deg, #1d4ed8, #4f46e5 55%, #7c3aed);
+    color: #fff;
+  }
+
+  .bi-detail-modal .modal-body {
+    padding: 1rem;
+    max-height: 72vh;
+    overflow: auto;
+    background: #f8fafc;
+  }
+
+  .bi-detail-modal .bi-panel {
+    box-shadow: none;
+    border-radius: 1rem;
+  }
+
+  .bi-detail-modal .bi-table-wrap {
+    max-height: 58vh;
+  }
+
+  .bi-modal-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .8rem;
+  }
+
+  .bi-modal-stat {
+    padding: 1rem;
+    border: 1px solid var(--bi-border);
+    border-radius: .95rem;
+    background: #fff;
+  }
+
+  .bi-modal-stat small {
+    display: block;
+    color: var(--bi-muted);
+    font-weight: 700;
+  }
+
+  .bi-modal-stat strong {
+    display: block;
+    margin-top: .25rem;
+    color: var(--bi-dark);
+    font-size: 1.35rem;
+  }
+
+  html[data-theme="dark"] .bi-click-kpi,
+  html[data-theme="dark"] .bi-detail-modal .modal-body,
+  html[data-theme="dark"] .bi-modal-stat,
+  html[data-theme="dark"] .bi-chat-box,
+  html[data-theme="dark"] .bi-chat-form-wrap,
+  html[data-theme="dark"] .bi-message-bubble,
+  html[data-theme="dark"] .bi-result-card,
+  html[data-theme="dark"] .bi-chat-suggestion,
+  html[data-theme="dark"] .bi-smart-table thead th {
+    background: var(--card-bg);
+    color: var(--text);
+  }
+
+  @media (max-width: 1199.98px) {
+    .bi-page {
+      height: auto;
+      min-height: 0;
+      overflow: visible;
+    }
+
+    .bi-main-grid {
+      grid-template-columns: 1fr;
+      height: auto;
+    }
+
+    .bi-chat-screen {
+      min-height: 650px;
+    }
+
+    .bi-click-kpis {
+      grid-template-rows: none;
+      grid-auto-rows: minmax(125px, auto);
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .bi-click-kpis {
+      grid-template-columns: 1fr;
+    }
+
+    .bi-chat-screen {
+      min-height: 570px;
+    }
+
+    .bi-modal-summary {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+
+<div class="container-fluid py-3 bi-page">
+  {% set kpis = dashboard.kpis %}
+
+  <div class="bi-main-grid">
+    <!-- 50% izquierdo: tarjetas compactas -->
+    <aside class="bi-dashboard-side">
+      <div class="bi-side-heading">
+        <div>
+          <h5>Resumen del negocio</h5>
+          <p>Presiona una tarjeta para consultar el detalle.</p>
+        </div>
+
+        <span class="badge rounded-pill text-bg-light border">
+          <i class="bi bi-hand-index-thumb me-1"></i>Interactivo
+        </span>
+      </div>
+
+      <div class="bi-click-kpis">
+        <button type="button"
+                class="bi-click-kpi"
+                style="--kpi-color:#2563eb;--kpi-soft:rgba(37,99,235,.10);"
+                data-bs-toggle="modal"
+                data-bs-target="#modalVentas">
+          <span class="bi-click-kpi-action">Ver detalle</span>
+          <div class="bi-click-kpi-top">
+            <div>
+              <div class="bi-click-kpi-label">Ventas del mes</div>
+              <div class="bi-click-kpi-value">
+                ${{ '{:,.2f}'.format(kpis.month_revenue) }}
+              </div>
+              <div class="bi-click-kpi-caption">
+                {{ kpis.month_sales }} operaciones
+              </div>
+            </div>
+            <div class="bi-click-kpi-icon">
+              <i class="bi bi-graph-up-arrow"></i>
+            </div>
+          </div>
+        </button>
+
+        <button type="button"
+                class="bi-click-kpi"
+                style="--kpi-color:#ea580c;--kpi-soft:rgba(249,115,22,.11);"
+                data-bs-toggle="modal"
+                data-bs-target="#modalStock">
+          <span class="bi-click-kpi-action">Ver detalle</span>
+          <div class="bi-click-kpi-top">
+            <div>
+              <div class="bi-click-kpi-label">Stock bajo</div>
+              <div class="bi-click-kpi-value">{{ kpis.low_stock }}</div>
+              <div class="bi-click-kpi-caption">productos en riesgo</div>
+            </div>
+            <div class="bi-click-kpi-icon">
+              <i class="bi bi-box-seam"></i>
+            </div>
+          </div>
+        </button>
+
+        <button type="button"
+                class="bi-click-kpi"
+                style="--kpi-color:#7c3aed;--kpi-soft:rgba(124,58,237,.10);"
+                data-bs-toggle="modal"
+                data-bs-target="#modalSinMovimiento">
+          <span class="bi-click-kpi-action">Ver detalle</span>
+          <div class="bi-click-kpi-top">
+            <div>
+              <div class="bi-click-kpi-label">Sin movimiento</div>
+              <div class="bi-click-kpi-value">{{ kpis.slow_products }}</div>
+              <div class="bi-click-kpi-caption">60 días o más</div>
+            </div>
+            <div class="bi-click-kpi-icon">
+              <i class="bi bi-hourglass-split"></i>
+            </div>
+          </div>
+        </button>
+
+        <button type="button"
+                class="bi-click-kpi"
+                style="--kpi-color:#dc2626;--kpi-soft:rgba(220,38,38,.10);"
+                data-bs-toggle="modal"
+                data-bs-target="#modalVencidos">
+          <span class="bi-click-kpi-action">Ver detalle</span>
+          <div class="bi-click-kpi-top">
+            <div>
+              <div class="bi-click-kpi-label">Clientes vencidos</div>
+              <div class="bi-click-kpi-value">{{ kpis.overdue_customers }}</div>
+              <div class="bi-click-kpi-caption">crédito pendiente</div>
+            </div>
+            <div class="bi-click-kpi-icon">
+              <i class="bi bi-person-exclamation"></i>
+            </div>
+          </div>
+        </button>
+
+        <button type="button"
+                class="bi-click-kpi"
+                style="--kpi-color:#0891b2;--kpi-soft:rgba(8,145,178,.10);"
+                data-bs-toggle="modal"
+                data-bs-target="#modalSaldo">
+          <span class="bi-click-kpi-action">Ver detalle</span>
+          <div class="bi-click-kpi-top">
+            <div>
+              <div class="bi-click-kpi-label">Saldo pendiente</div>
+              <div class="bi-click-kpi-value">
+                ${{ '{:,.2f}'.format(dashboard.credit_summary.pending_balance) }}
+              </div>
+              <div class="bi-click-kpi-caption">cartera total</div>
+            </div>
+            <div class="bi-click-kpi-icon">
+              <i class="bi bi-wallet2"></i>
+            </div>
+          </div>
+        </button>
+
+        <button type="button"
+                class="bi-click-kpi"
+                style="--kpi-color:#d97706;--kpi-soft:rgba(245,158,11,.12);"
+                data-bs-toggle="modal"
+                data-bs-target="#modalAlertas">
+          <span class="bi-click-kpi-action">Ver detalle</span>
+          <div class="bi-click-kpi-top">
+            <div>
+              <div class="bi-click-kpi-label">Alertas</div>
+              <div class="bi-click-kpi-value">{{ kpis.alerts }}</div>
+              <div class="bi-click-kpi-caption">requieren revisión</div>
+            </div>
+            <div class="bi-click-kpi-icon">
+              <i class="bi bi-bell-fill"></i>
+            </div>
+          </div>
+        </button>
+      </div>
+    </aside>
+    <!-- 50% derecho: chat inteligente -->
+    <section class="bi-panel bi-chat-card bi-chat-screen">
+      <div class="bi-panel-header">
+        <div class="d-flex justify-content-between align-items-start gap-3">
+          <div class="bi-panel-title">
+            <div class="bi-panel-icon">
+              <i class="bi bi-robot"></i>
+            </div>
+
+            <div>
+              <h5 class="fw-bold mb-1">Asistente empresarial</h5>
+              <div class="bi-panel-subtitle">
+                Consulta productos, clientes, ventas e inventario.
+              </div>
+            </div>
+          </div>
+
+          <span class="bi-chat-status">Disponible</span>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="bi-chat-suggestions">
+          <button type="button" class="bi-chat-suggestion"
+                  data-bi-question="¿Cuáles son mis productos con stock bajo?">
+            <i class="bi bi-box-seam me-1"></i>Stock bajo
+          </button>
+
+          <button type="button" class="bi-chat-suggestion"
+                  data-bi-question="¿Cuáles son mis 5 productos más vendidos?">
+            <i class="bi bi-trophy me-1"></i>Más vendidos
+          </button>
+
+          <button type="button" class="bi-chat-suggestion"
+                  data-bi-question="¿Qué productos debería volver a surtir?">
+            <i class="bi bi-cart-plus me-1"></i>Reabastecer
+          </button>
+
+          <button type="button" class="bi-chat-suggestion"
+                  data-bi-question="¿Qué cliente compra más?">
+            <i class="bi bi-person-check me-1"></i>Mejor cliente
+          </button>
+
+          <button type="button" class="bi-chat-suggestion"
+                  data-bi-question="¿Quién tiene pagos vencidos?">
+            <i class="bi bi-credit-card-2-front me-1"></i>Pagos vencidos
+          </button>
+        </div>
+
+        <div id="bi-chat-messages" class="bi-chat-box">
+          <div class="bi-message bi-message-assistant">
+            <div class="bi-message-avatar">
+              <i class="bi bi-stars"></i>
+            </div>
+
+            <div class="bi-message-bubble">
+              Hola. Puedo analizar la información de
+              <strong>{{ company_name }}</strong>.
+
+              Pregúntame por productos más vendidos, stock bajo,
+              clientes principales, ventas, inventario o cobranza.
+            </div>
+          </div>
+        </div>
+
+        <form id="bi-chat-form"
+              data-endpoint="{{ url_for('business_intelligence.chat') }}">
+          <div class="bi-chat-form-wrap">
+            <div class="d-flex align-items-center gap-2">
+              <input
+                id="bi-question"
+                class="form-control bi-chat-input"
+                type="text"
+                maxlength="300"
+                autocomplete="off"
+                placeholder="Escribe una pregunta sobre tu negocio..."
+                aria-label="Pregunta para el asistente empresarial"
+              >
+
+              <button
+                id="bi-chat-submit"
+                class="btn btn-primary bi-chat-send"
+                type="submit"
+                title="Enviar pregunta"
+              >
+                <i class="bi bi-send-fill" aria-hidden="true"></i>
+                <span class="visually-hidden">Enviar</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="small text-muted mt-2 px-1">
+            <i class="bi bi-shield-check me-1"></i>
+            Las consultas utilizan únicamente los datos de esta empresa.
+          </div>
+        </form>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- MODAL: ventas -->
+<div class="modal fade bi-detail-modal" id="modalVentas" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold">
+            <i class="bi bi-graph-up-arrow me-2"></i>Ventas del mes
+          </h5>
+          <small>Resumen y productos con mejor rendimiento</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white"
+                data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="bi-modal-summary mb-3">
+          <div class="bi-modal-stat">
+            <small>Ingresos del mes</small>
+            <strong>${{ '{:,.2f}'.format(kpis.month_revenue) }}</strong>
+          </div>
+          <div class="bi-modal-stat">
+            <small>Operaciones</small>
+            <strong>{{ kpis.month_sales }}</strong>
+          </div>
+          <div class="bi-modal-stat">
+            <small>Promedio por operación</small>
+            <strong>
+              {% if kpis.month_sales %}
+                ${{ '{:,.2f}'.format(kpis.month_revenue / kpis.month_sales) }}
+              {% else %}
+                $0.00
+              {% endif %}
+            </strong>
+          </div>
+        </div>
+
+        <div class="bi-panel bi-ranking-card">
+          <div class="bi-panel-header">
+            <div class="bi-panel-title">
+              <div class="bi-panel-icon"><i class="bi bi-trophy-fill"></i></div>
+              <div>
+                <h5 class="fw-bold mb-1">Productos más vendidos</h5>
+                <div class="bi-panel-subtitle">Rendimiento de los últimos 30 días</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bi-ranking-list">
+            {% for product in dashboard.top_products %}
+              <div class="bi-ranking-item">
+                <div class="bi-ranking-number">{{ loop.index }}</div>
+                <div class="bi-ranking-content">
+                  <div class="bi-ranking-name">{{ product.name }}</div>
+                  <div class="bi-ranking-meta">
+                    ${{ '{:,.2f}'.format(product.revenue) }} generados
+                  </div>
+                </div>
+                <span class="bi-ranking-badge">{{ product.units_sold }} uds.</span>
+              </div>
+            {% else %}
+              <div class="text-center text-muted py-5">Sin ventas recientes.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: stock bajo -->
+<div class="modal fade bi-detail-modal" id="modalStock" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold">
+            <i class="bi bi-box-seam me-2"></i>Productos con stock bajo
+          </h5>
+          <small>Riesgo según existencia y ventas de los últimos 30 días</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white"
+                data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="bi-panel overflow-hidden">
+          <div class="bi-table-wrap">
+            {% if dashboard.low_stock %}
+              <div class="table-responsive">
+                <table class="table bi-smart-table align-middle">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Stock</th>
+                      <th>Venta 30 días</th>
+                      <th>Cobertura</th>
+                      <th>Riesgo</th>
+                      <th>Acción sugerida</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for product in dashboard.low_stock %}
+                      {% set risk_class = product.risk|lower|replace('í', 'i') %}
+                      <tr>
+                        <td class="bi-product-cell">
+                          <div class="d-flex align-items-center gap-3">
+                            <div class="bi-product-avatar">
+                              <i class="bi bi-box"></i>
+                            </div>
+                            <div>
+                              <div class="fw-bold">{{ product.name }}</div>
+                              <div class="small text-muted">
+                                {{ product.sku or product.category or 'Sin categoría' }}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td><span class="bi-stock-value">{{ product.stock }}</span></td>
+                        <td>{{ product.units_30d }} uds.</td>
+                        <td>
+                          {% if product.coverage_days is not none %}
+                            {{ product.coverage_days }} días
+                          {% else %}
+                            Sin consumo
+                          {% endif %}
+                        </td>
+                        <td>
+                          <span class="bi-risk-badge bi-risk-{{ risk_class }}">
+                            {{ product.risk }}
+                          </span>
+                        </td>
+                        <td>
+                          <div class="bi-suggestion">
+                            {% if product.suggested_purchase > 0 %}
+                              <i class="bi bi-cart-plus me-1"></i>
+                              Comprar {{ product.suggested_purchase }}
+                            {% else %}
+                              <i class="bi bi-sliders me-1"></i>
+                              Revisar mínimo
+                            {% endif %}
+                          </div>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <div class="bi-empty-state">
+                <div class="bi-empty-icon"><i class="bi bi-check2-circle"></i></div>
+                <h6 class="fw-bold">Inventario saludable</h6>
+                <p class="mb-0">No se detectaron productos con riesgo de agotarse.</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: sin movimiento -->
+<div class="modal fade bi-detail-modal" id="modalSinMovimiento" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold">
+            <i class="bi bi-hourglass-split me-2"></i>Productos sin movimiento
+          </h5>
+          <small>Indicador de productos sin venta durante 60 días o más</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white"
+                data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="bi-modal-summary">
+          <div class="bi-modal-stat">
+            <small>Total detectado</small>
+            <strong>{{ kpis.slow_products }}</strong>
+          </div>
+          <div class="bi-modal-stat">
+            <small>Periodo considerado</small>
+            <strong>60 días</strong>
+          </div>
+          <div class="bi-modal-stat">
+            <small>Acción recomendada</small>
+            <strong style="font-size:1rem;">Promoción o ajuste</strong>
+          </div>
+        </div>
+
+        <div class="alert alert-warning mt-3 mb-0">
+          <i class="bi bi-lightbulb me-2"></i>
+          Puedes preguntarle al asistente qué productos tienen menor movimiento
+          o qué estrategia aplicar para desplazarlos.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: clientes vencidos -->
+<div class="modal fade bi-detail-modal" id="modalVencidos" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold">
+            <i class="bi bi-person-exclamation me-2"></i>Clientes con pagos vencidos
+          </h5>
+          <small>Clientes que superaron el plazo de crédito</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white"
+                data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="bi-panel bi-ranking-card">
+          <div class="bi-ranking-list">
+            {% for customer in dashboard.overdue_customers %}
+              {% set risk_class = customer.risk|lower|replace('í', 'i') %}
+              <div class="bi-ranking-item">
+                <div class="bi-ranking-number">{{ loop.index }}</div>
+                <div class="bi-ranking-content">
+                  <div class="bi-ranking-name">{{ customer.name }}</div>
+                  <div class="bi-ranking-meta">
+                    {{ customer.max_days_overdue }} días de atraso
+                  </div>
+                  <div class="mt-1">
+                    <span class="bi-risk-badge bi-risk-{{ risk_class }}">
+                      {{ customer.risk }}
+                    </span>
+                  </div>
+                </div>
+                <div class="bi-ranking-value text-danger">
+                  ${{ '{:,.2f}'.format(customer.balance) }}
+                </div>
+              </div>
+            {% else %}
+              <div class="text-center text-muted py-5">
+                <i class="bi bi-check-circle display-6 d-block mb-2 text-success"></i>
+                No hay saldos vencidos.
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: saldo pendiente -->
+<div class="modal fade bi-detail-modal" id="modalSaldo" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold">
+            <i class="bi bi-wallet2 me-2"></i>Saldo pendiente
+          </h5>
+          <small>Resumen de la cartera de crédito</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white"
+                data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="bi-modal-summary">
+          <div class="bi-modal-stat">
+            <small>Cartera pendiente</small>
+            <strong>
+              ${{ '{:,.2f}'.format(dashboard.credit_summary.pending_balance) }}
+            </strong>
+          </div>
+          <div class="bi-modal-stat">
+            <small>Clientes vencidos</small>
+            <strong>{{ kpis.overdue_customers }}</strong>
+          </div>
+          <div class="bi-modal-stat">
+            <small>Plazo provisional</small>
+            <strong>{{ dashboard.credit_summary.credit_days }} días</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: alertas -->
+<div class="modal fade bi-detail-modal" id="modalAlertas" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title fw-bold">
+            <i class="bi bi-bell-fill me-2"></i>Alertas del negocio
+          </h5>
+          <small>Indicadores que requieren atención</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white"
+                data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="list-group">
+          <div class="list-group-item d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-box-seam text-warning me-2"></i>Productos con stock bajo</span>
+            <span class="badge text-bg-warning rounded-pill">{{ kpis.low_stock }}</span>
+          </div>
+          <div class="list-group-item d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-hourglass-split text-primary me-2"></i>Productos sin movimiento</span>
+            <span class="badge text-bg-primary rounded-pill">{{ kpis.slow_products }}</span>
+          </div>
+          <div class="list-group-item d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-person-exclamation text-danger me-2"></i>Clientes vencidos</span>
+            <span class="badge text-bg-danger rounded-pill">{{ kpis.overdue_customers }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/business_intelligence_chat.js') }}"></script>
+{% endblock %}

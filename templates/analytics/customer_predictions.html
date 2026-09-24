@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Predicción de clientes{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="mb-4">
+    <h2 class="fw-bold mb-1">Predicción de recompra</h2>
+    <p class="text-muted mb-0">{{ company.name }}</p>
+  </div>
+
+  {% if not model %}
+    <div class="alert alert-info">
+      Tu empresa todavía no tiene un modelo entrenado. El Developer debe
+      entrenarlo cuando exista historial suficiente.
+    </div>
+  {% else %}
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Compras</th>
+                <th>Promedio</th>
+                <th>Días sin comprar</th>
+                <th>Probabilidad</th>
+                <th>Nivel</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for item in predictions %}
+              <tr>
+                <td>{{ item.client_name }}</td>
+                <td>{{ item.purchase_count }}</td>
+                <td>${{ "{:,.2f}".format(item.avg_purchase) }}</td>
+                <td>{{ item.days_since_last_purchase }}</td>
+                <td>{{ item.probability }}%</td>
+                <td>{{ item.level }}</td>
+              </tr>
+            {% else %}
+              <tr><td colspan="6" class="text-center text-muted py-4">
+                No existen clientes con ventas identificadas.
+              </td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
