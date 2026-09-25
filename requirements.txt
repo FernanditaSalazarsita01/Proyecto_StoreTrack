@@ -1,0 +1,11 @@
+flask
+pymongo
+werkzeug
+python-dotenv
+pandas
+scikit-learn
+joblib
+openai>=2.0.0
+openpyxl>=3.1.5
+reportlab>=4.2.5
+pypdf>=5.7.0
