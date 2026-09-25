@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}STORE TRACK | Editar producto{% endblock %}
+
+{% block extra_css %}
+<style>
+  .edit-card{
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--panel-shadow);
+    border-radius:14px;
+    overflow:hidden;
+  }
+
+  .edit-head{
+    padding:18px;
+    border-bottom:1px solid #eef1f4;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+  }
+
+  .edit-head h2{
+    margin:0;
+    font-weight:900;
+    font-size:22px;
+  }
+
+  .edit-head small{
+    color:var(--muted);
+  }
+
+  .edit-body{
+    padding:18px;
+  }
+
+  .form-label{
+    font-size:12px;
+    font-weight:700;
+  }
+
+  .form-control{
+    border-radius:10px;
+    font-size:13px;
+    padding:10px 12px;
+  }
+
+  .preview-img{
+    width:80px;
+    height:80px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    object-fit:cover;
+    background:#f1f5f9;
+  }
+
+  .btn-pill{
+    border-radius:10px;
+    font-weight:800;
+    font-size:13px;
+    padding:9px 14px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="edit-card">
+  <div class="edit-head">
+    <div>
+      <h2>Editar producto</h2>
+      <small>Este producto pertenece únicamente a: {{ session.company_name }}</small>
+    </div>
+
+    <a href="/productos" class="btn btn-outline-secondary btn-pill">
+      <i class="bi bi-arrow-left"></i> Volver
+    </a>
+  </div>
+
+  <div class="edit-body">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-3">
+          {% for category, msg in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show">
+              {{ msg }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST"
+          action="/products/{{ product._id }}/update"
+          enctype="multipart/form-data"
+          class="row g-3">
+
+      <div class="col-12 col-md-6">
+        <label class="form-label">Nombre</label>
+        <input name="name" class="form-control" required value="{{ product.get('name','') }}">
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label">SKU / Código</label>
+        <input name="sku" class="form-control" required value="{{ product.get('sku','') }}">
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label">Categoría</label>
+        <input name="category" class="form-control" required value="{{ product.get('category','') }}">
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label">Proveedor</label>
+        <input name="provider" class="form-control" value="{{ product.get('provider','') }}">
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Precio</label>
+        <input name="price" type="number" step="0.01" min="0" class="form-control" value="{{ product.get('price',0) }}">
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Stock</label>
+        <input name="stock" type="number" min="0" class="form-control" value="{{ product.get('stock',0) }}">
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Unidad</label>
+        <input name="unit" class="form-control" value="{{ product.get('unit','') }}">
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Imagen actual</label>
+
+        <div class="d-flex align-items-center gap-3 mb-2">
+          {% if product.get('image_path') %}
+            <img class="preview-img" src="{{ url_for('static', filename=product.get('image_path')) }}">
+          {% elif product.get('image_filename') %}
+            <img class="preview-img" src="{{ url_for('static', filename='uploads/' ~ session.company_id ~ '/products/' ~ product.get('image_filename')) }}">
+          {% else %}
+            <img class="preview-img" src="{{ url_for('static', filename='img/no-image.png') }}">
+          {% endif %}
+
+          <div class="text-muted" style="font-size:13px;">
+            Si seleccionas una nueva imagen, se reemplazará la actual.
+          </div>
+        </div>
+
+        <input name="image" type="file" class="form-control" accept="image/png,image/jpeg,image/webp">
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Descripción / Notas</label>
+        <textarea name="description" class="form-control" rows="3">{{ product.get('description','') }}</textarea>
+      </div>
+
+      <div class="col-12 d-flex gap-2 justify-content-end">
+        <a href="/productos" class="btn btn-outline-secondary btn-pill">
+          Cancelar
+        </a>
+
+        <button class="btn btn-primary btn-pill" type="submit">
+          <i class="bi bi-check2-circle"></i> Actualizar producto
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+{% endblock %}
