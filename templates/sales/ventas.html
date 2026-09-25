@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}STORE TRACK | Ventas pagadas{% endblock %}
+
+{% block content %}
+
+<div class="panel">
+  <div class="ui-toolbar">
+    <div>
+      <h2 class="ui-title">Ventas pagadas</h2>
+      <div class="ui-sub">Ventas liquidadas de {{ session.company_name }}.</div>
+    </div>
+
+    <a href="/nueva-venta" class="btn btn-success">
+      <i class="bi bi-cart-plus"></i> Nueva venta
+    </a>
+  </div>
+
+  <div class="p-3">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show">
+            {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Tipo</th>
+            <th>Productos</th>
+            <th>Total</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+
+        <tbody>
+        {% if sales and sales|length > 0 %}
+          {% for s in sales %}
+            <tr>
+              <td>
+                {{ s.get('created_at').strftime('%d/%m/%Y %H:%M') if s.get('created_at') else '' }}
+              </td>
+
+              <td>
+                <strong>{{ s.get('customer', {}).get('name', 'Venta rápida') }}</strong><br>
+                <small class="text-muted">{{ s.get('customer', {}).get('phone', '') }}</small>
+              </td>
+
+              <td>
+                {% if s.get('sale_type') == 'credit' %}
+                  <span class="badge bg-warning text-dark">Crédito liquidado</span>
+                {% else %}
+                  <span class="badge bg-success">Contado</span>
+                {% endif %}
+              </td>
+
+              <td>
+                {{ s.get('items', [])|length }}
+              </td>
+
+              <td>
+                <strong>${{ "%.2f"|format(s.get('total', 0)|float) }}</strong>
+              </td>
+
+              <td>
+                <span class="badge bg-success">Pagada</span>
+              </td>
+
+              <td class="text-end">
+  <div class="btn-group btn-group-sm">
+    <a href="/sales/{{ s.get('_id') }}/pdf/ticket" class="btn btn-outline-dark">
+      <i class="bi bi-receipt"></i> Ticket
+    </a>
+
+    <a href="/sales/{{ s.get('_id') }}/pdf/nota" class="btn btn-outline-primary">
+      <i class="bi bi-file-earmark-pdf"></i> Nota
+    </a>
+  </div>
+</td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">
+              No hay ventas pagadas registradas.
+            </td>
+          </tr>
+        {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .panel{
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--panel-shadow);
+    border-radius:12px;
+    overflow:hidden;
+  }
+
+  .ui-toolbar{
+    padding:16px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .ui-title{
+    font-weight:900;
+    font-size:22px;
+    margin:0;
+  }
+
+  .ui-sub{
+    color:var(--muted);
+    font-size:12px;
+  }
+
+  table thead th{
+    background:#0f3c4c!important;
+    color:#fff!important;
+    font-size:12px;
+    white-space:nowrap;
+  }
+
+  table tbody td{
+    font-size:12px;
+  }
+</style>
+{% endblock %}

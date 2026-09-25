@@ -1,0 +1,835 @@
+{% extends "base.html" %}
+
+{% block title %}STORE TRACK | Nueva venta{% endblock %}
+
+{% block extra_css %}
+<style>
+  body{
+    background:#eef1f5;
+  }
+
+  .dashboard-wrap{
+    padding-top:6px;
+  }
+
+  .card-box{
+    background:#fff;
+    border:1px solid #dfe4ea;
+    box-shadow:0 2px 7px rgba(15,23,42,.05);
+    border-radius:3px;
+    overflow:hidden;
+  }
+
+  .card-head{
+    min-height:44px;
+    padding:10px 12px;
+    border-bottom:2px solid #2d9bf0;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    background:#fff;
+  }
+
+  .card-title{
+    display:flex;
+    gap:7px;
+    align-items:center;
+  }
+
+  .card-title i{
+    color:#111827;
+    font-size:14px;
+  }
+
+  .card-title h5{
+    margin:0;
+    font-weight:800;
+    font-size:13px;
+    text-transform:uppercase;
+    color:#1f2937;
+  }
+
+  .card-title small{
+    color:#6b7280;
+    font-size:11px;
+  }
+
+  .card-body-custom{
+    padding:18px;
+  }
+
+  .form-label{
+    font-size:12px;
+    font-weight:700;
+    color:#374151;
+  }
+
+  .form-control,
+  .form-select{
+    border-radius:3px;
+    font-size:13px;
+    padding:9px 11px;
+    border:1px solid #d1d5db;
+  }
+
+  .form-control:focus,
+  .form-select:focus{
+    border-color:#2d9bf0;
+    box-shadow:0 0 0 .15rem rgba(45,155,240,.15);
+  }
+
+  textarea.form-control{
+    resize:vertical;
+  }
+
+  .btn{
+    border-radius:3px;
+    font-size:13px;
+    font-weight:700;
+    padding:8px 12px;
+  }
+
+  .alert{
+    border-radius:3px;
+    font-size:13px;
+  }
+
+  .section-title{
+    font-size:12px;
+    font-weight:800;
+    margin-bottom:10px;
+    color:#374151;
+    text-transform:uppercase;
+  }
+
+  .sale-type-btn{
+    border-radius:3px;
+  }
+
+  .sale-type-btn.active{
+    box-shadow:0 0 0 3px rgba(25,135,84,.18);
+  }
+
+  .client-mode-option{
+    border:1px solid #d1d5db;
+    border-radius:3px;
+    padding:8px 12px;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    background:#fff;
+    color:#374151;
+  }
+
+  .client-mode-option:hover{
+    background:#f8fafc;
+  }
+
+  .client-mode-option input{
+    margin-right:6px;
+  }
+
+  .hint-text{
+    font-size:12px;
+    display:block;
+    margin-top:7px;
+  }
+
+  .detail-add-panel{
+    padding:16px 18px;
+    border-bottom:1px solid #e5e7eb;
+    background:#fbfcfe;
+  }
+
+  .product-add-row{
+    display:grid;
+    grid-template-columns:1fr 100px 170px;
+    gap:10px;
+    align-items:start;
+  }
+
+  .table.sale-table{
+    margin:0;
+    border-collapse:separate;
+    border-spacing:0;
+  }
+
+  .table.sale-table thead th{
+    background:#0f3c4c;
+    color:#fff;
+    font-weight:800;
+    font-size:12px;
+    padding:11px 12px;
+    border:0;
+    white-space:nowrap;
+    vertical-align:middle;
+  }
+
+  .table.sale-table tbody td{
+    background:#fff;
+    font-size:12px;
+    padding:11px 12px;
+    border-top:1px solid #e6eaee;
+    vertical-align:middle;
+    color:#374151;
+  }
+
+  .table.sale-table tbody tr:hover td{
+    background:#f8fafc;
+  }
+
+  .sale-total-box{
+    padding:16px 18px;
+    border-top:1px solid #e5e7eb;
+    background:#fbfcfe;
+  }
+
+  .summary-line{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:13px;
+    color:#374151;
+    margin-bottom:8px;
+  }
+
+  .summary-total{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding-top:10px;
+    border-top:1px solid #e5e7eb;
+    font-size:15px;
+    color:#111827;
+  }
+
+  .summary-total strong{
+    font-size:20px;
+  }
+
+  .remove-btn{
+    border-radius:3px;
+    font-size:12px;
+    font-weight:700;
+    padding:5px 9px;
+  }
+
+  .empty-row{
+    padding:26px !important;
+    color:#6b7280 !important;
+    font-size:13px !important;
+  }
+
+  .side-box{
+    position:sticky;
+    top:14px;
+  }
+
+  @media(max-width: 992px){
+    .side-box{
+      position:static;
+    }
+  }
+
+  @media(max-width: 768px){
+    .product-add-row{
+      grid-template-columns:1fr;
+    }
+
+    .card-head{
+      align-items:flex-start;
+      flex-direction:column;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-wrap">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mb-3">
+        {% for category, msg in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show">
+            {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <form method="POST" action="/sales/create" id="saleForm">
+
+    <input type="hidden" name="sale_type" id="sale_type" value="cash">
+
+    <div class="row g-3">
+
+      <div class="col-12 col-lg-8">
+
+        <div class="card-box">
+          <div class="card-head">
+            <div class="card-title">
+              <i class="bi bi-receipt-cutoff"></i>
+              <div>
+                <h5>Detalle de venta</h5>
+                <small>{{ now_str }}</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-add-panel">
+
+            <div class="product-add-row">
+              <div>
+                <label class="form-label">Agregar producto</label>
+                <input 
+                  class="form-control" 
+                  id="productSearch" 
+                  list="productsList" 
+                  placeholder="Buscar producto por nombre o SKU"
+                >
+
+                <datalist id="productsList">
+                  {% for p in products %}
+                    <option
+                      value="{{ (p.name or '') ~ ' (' ~ (p.sku or '') ~ ')' }}"
+                      data-id="{{ p._id }}"
+                      data-name="{{ p.name }}"
+                      data-sku="{{ p.sku }}"
+                      data-price="{{ p.price }}"
+                      data-stock="{{ p.stock }}"
+                      data-unit="{{ p.unit }}">
+                    </option>
+                  {% endfor %}
+                </datalist>
+
+                <small id="productHint" class="text-muted hint-text">
+                  Selecciona un producto del listado.
+                </small>
+              </div>
+
+              <div>
+                <label class="form-label">Cantidad</label>
+                <input type="number" class="form-control" id="qtyInput" min="1" value="1">
+              </div>
+
+              <div>
+                <label class="form-label">&nbsp;</label>
+                <button type="button" class="btn btn-primary w-100" onclick="addSelectedProduct()">
+                  <i class="bi bi-plus-circle"></i> Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table sale-table align-middle">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>SKU</th>
+                  <th>Precio</th>
+                  <th>Cant.</th>
+                  <th>Importe</th>
+                  <th class="text-end">Quitar</th>
+                </tr>
+              </thead>
+
+              <tbody id="cartBody">
+                <tr>
+                  <td colspan="6" class="text-center empty-row">
+                    Aún no agregas productos.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="sale-total-box">
+            <div class="summary-line">
+              <span>Subtotal</span>
+              <strong id="subtotalLabel">$0.00</strong>
+            </div>
+
+            <div class="summary-total">
+              <span>TOTAL</span>
+              <strong id="totalLabel">$0.00</strong>
+            </div>
+
+            <div class="alert alert-warning mt-3 d-none" id="creditAlert">
+              Esta venta se registrará como <strong>pendiente de pago</strong>.
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 mt-3" id="submitBtn">
+              <i class="bi bi-check2-circle"></i> Cobrar
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="col-12 col-lg-4">
+
+        <div class="side-box">
+
+          <div class="card-box mb-3">
+            <div class="card-head">
+              <div class="card-title">
+                <i class="bi bi-sliders"></i>
+                <div>
+                  <h5>Configuración de venta</h5>
+                  <small>Selecciona el tipo de venta y modo de cliente.</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body-custom">
+
+              <div class="mb-3">
+                <div class="section-title">Tipo de venta</div>
+
+                <div class="d-flex gap-2 flex-wrap">
+                  <button type="button" class="btn btn-success sale-type-btn active" id="btnCash" onclick="setSaleType('cash')">
+                    <i class="bi bi-cash-coin"></i> Venta pagada
+                  </button>
+
+                  {% if has_plan_feature('credit_sales') %}
+                    <button type="button" class="btn btn-outline-warning sale-type-btn" id="btnCredit" onclick="setSaleType('credit')">
+                      <i class="bi bi-hourglass-split"></i> Venta a crédito
+                    </button>
+                  {% else %}
+                    <button type="button"
+                            class="btn btn-outline-secondary sale-type-btn"
+                            id="btnCredit"
+                            onclick="showUpgradeCreditAlert()">
+                      <i class="bi bi-lock-fill"></i> Venta a crédito
+                    </button>
+                  {% endif %}
+                </div>
+
+                <small id="saleTypeHint" class="text-muted hint-text">
+                  La venta pagada puede registrarse como venta rápida.
+                </small>
+              </div>
+
+              <div>
+                <div class="section-title">Modo de cliente</div>
+
+                <div class="d-flex gap-2 flex-wrap">
+                  <label class="client-mode-option">
+                    <input type="radio" name="client_mode" value="quick" checked onchange="setClientMode()">
+                    Venta rápida
+                  </label>
+
+                  <label class="client-mode-option">
+                    <input type="radio" name="client_mode" value="existing" onchange="setClientMode()">
+                    Cliente existente
+                  </label>
+
+                  <label class="client-mode-option">
+                    <input type="radio" name="client_mode" value="new" onchange="setClientMode()">
+                    Nuevo cliente
+                  </label>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="card-box mb-3">
+            <div class="card-head">
+              <div class="card-title">
+                <i class="bi bi-person-lines-fill"></i>
+                <div>
+                  <h5>Información del cliente</h5>
+                  <small>Datos generales asociados a la venta.</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body-custom">
+
+              <div id="existingClientBox" class="d-none mb-3">
+                <label class="form-label">Seleccionar cliente</label>
+
+                <select class="form-select" name="client_id" id="client_id" onchange="fillClientData()">
+                  <option value="">Selecciona un cliente...</option>
+                  {% for c in clients %}
+                    <option
+                      value="{{ c._id }}"
+                      data-name="{{ c.name }}"
+                      data-email="{{ c.email }}"
+                      data-phone="{{ c.phone }}"
+                      data-address="{{ c.address }}">
+                      {{ c.name }}{% if c.phone %} - {{ c.phone }}{% endif %}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div id="newClientBox" class="d-none mb-3">
+                <div class="section-title">Registrar nuevo cliente</div>
+
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label">Nombre</label>
+                    <input class="form-control" type="text" name="new_client_name" id="new_client_name" placeholder="Nombre del nuevo cliente">
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label">Correo</label>
+                    <input class="form-control" type="email" name="new_client_email" id="new_client_email" placeholder="Correo">
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label">Teléfono</label>
+                    <input class="form-control" type="text" name="new_client_phone" id="new_client_phone" placeholder="Teléfono">
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label">Dirección</label>
+                    <textarea class="form-control" name="new_client_address" id="new_client_address" rows="2" placeholder="Dirección"></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div id="customerDataBox">
+                <div class="section-title">Datos de la venta</div>
+
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label">Cliente</label>
+                    <input class="form-control" type="text" name="customer_name" id="customer_name" placeholder="Nombre del cliente o venta rápida">
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label">Correo</label>
+                    <input class="form-control" type="email" name="customer_email" id="customer_email" placeholder="Correo">
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label">Teléfono</label>
+                    <input class="form-control" type="text" name="customer_phone" id="customer_phone" placeholder="Teléfono">
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label">Dirección</label>
+                    <textarea class="form-control" name="customer_address" id="customer_address" rows="2" placeholder="Dirección"></textarea>
+                  </div>
+
+                  <div class="col-12">
+                    <small class="text-muted">
+                      En venta rápida puedes dejar los datos vacíos.
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <input type="hidden" name="items_json" id="items_json" value="[]">
+
+  </form>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const byKey = new Map();
+let CART = [];
+
+function money(n) {
+  return `$${Number(n || 0).toFixed(2)}`;
+}
+
+function setSaleType(type) {
+  document.getElementById("sale_type").value = type;
+
+  const btnCash = document.getElementById("btnCash");
+  const btnCredit = document.getElementById("btnCredit");
+  const submitBtn = document.getElementById("submitBtn");
+  const creditAlert = document.getElementById("creditAlert");
+  const saleTypeHint = document.getElementById("saleTypeHint");
+
+  if (type === "credit") {
+    btnCash.className = "btn btn-outline-success sale-type-btn";
+    btnCredit.className = "btn btn-warning sale-type-btn active";
+    submitBtn.className = "btn btn-warning w-100 mt-3";
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Registrar venta a crédito';
+    creditAlert.classList.remove("d-none");
+    saleTypeHint.textContent = "La venta a crédito obliga seleccionar o registrar un cliente.";
+
+    const currentMode = document.querySelector('input[name="client_mode"]:checked').value;
+    if (currentMode === "quick") {
+      document.querySelector('input[name="client_mode"][value="existing"]').checked = true;
+      setClientMode();
+    }
+
+  } else {
+    btnCash.className = "btn btn-success sale-type-btn active";
+    btnCredit.className = "btn btn-outline-warning sale-type-btn";
+    submitBtn.className = "btn btn-success w-100 mt-3";
+    submitBtn.innerHTML = '<i class="bi bi-check2-circle"></i> Registrar venta pagada';
+    creditAlert.classList.add("d-none");
+    saleTypeHint.textContent = "La venta pagada puede registrarse como venta rápida.";
+  }
+}
+
+function setClientMode() {
+  const mode = document.querySelector('input[name="client_mode"]:checked').value;
+  const saleType = document.getElementById("sale_type").value;
+
+  const existingClientBox = document.getElementById("existingClientBox");
+  const newClientBox = document.getElementById("newClientBox");
+  const customerDataBox = document.getElementById("customerDataBox");
+
+  existingClientBox.classList.add("d-none");
+  newClientBox.classList.add("d-none");
+  customerDataBox.classList.remove("d-none");
+
+  if (saleType === "credit" && mode === "quick") {
+    document.querySelector('input[name="client_mode"][value="existing"]').checked = true;
+    setClientMode();
+    return;
+  }
+
+  if (mode === "existing") {
+    existingClientBox.classList.remove("d-none");
+    fillClientData();
+  }
+
+  if (mode === "new") {
+    newClientBox.classList.remove("d-none");
+    clearCustomerData();
+  }
+
+  if (mode === "quick") {
+    clearCustomerData();
+  }
+}
+
+function fillClientData() {
+  const select = document.getElementById("client_id");
+  const opt = select.options[select.selectedIndex];
+
+  if (!opt || !opt.value) {
+    clearCustomerData();
+    return;
+  }
+
+  document.getElementById("customer_name").value = opt.dataset.name || "";
+  document.getElementById("customer_email").value = opt.dataset.email || "";
+  document.getElementById("customer_phone").value = opt.dataset.phone || "";
+  document.getElementById("customer_address").value = opt.dataset.address || "";
+}
+
+function clearCustomerData() {
+  document.getElementById("customer_name").value = "";
+  document.getElementById("customer_email").value = "";
+  document.getElementById("customer_phone").value = "";
+  document.getElementById("customer_address").value = "";
+}
+
+function buildIndexFromDatalist() {
+  byKey.clear();
+
+  document.querySelectorAll("#productsList option").forEach(opt => {
+    const key = (opt.value || "").trim();
+
+    byKey.set(key, {
+      _id: String(opt.dataset.id || ""),
+      name: String(opt.dataset.name || ""),
+      sku: String(opt.dataset.sku || ""),
+      unit: String(opt.dataset.unit || ""),
+      price: Number(opt.dataset.price || 0),
+      stock: parseInt(opt.dataset.stock || "0", 10)
+    });
+  });
+}
+
+function findSelectedProduct() {
+  const val = (document.getElementById("productSearch").value || "").trim();
+
+  if (byKey.has(val)) {
+    return byKey.get(val);
+  }
+
+  const q = val.toLowerCase();
+
+  for (const [k, p] of byKey.entries()) {
+    if (k.toLowerCase().includes(q)) {
+      return p;
+    }
+  }
+
+  return null;
+}
+
+function addSelectedProduct() {
+  const p = findSelectedProduct();
+  const qty = parseInt(document.getElementById("qtyInput").value || "1", 10);
+  const hint = document.getElementById("productHint");
+
+  if (!p) {
+    hint.textContent = "Producto no encontrado.";
+    hint.className = "text-danger hint-text";
+    return;
+  }
+
+  if (qty <= 0) {
+    hint.textContent = "Cantidad inválida.";
+    hint.className = "text-danger hint-text";
+    return;
+  }
+
+  if (qty > p.stock) {
+    hint.textContent = `Stock insuficiente. Disponible: ${p.stock}`;
+    hint.className = "text-danger hint-text";
+    return;
+  }
+
+  const idx = CART.findIndex(x => x.product_id === p._id);
+
+  if (idx >= 0) {
+    const nuevaCantidad = CART[idx].qty + qty;
+
+    if (nuevaCantidad > p.stock) {
+      hint.textContent = `No puedes exceder el stock disponible: ${p.stock}`;
+      hint.className = "text-danger hint-text";
+      return;
+    }
+
+    CART[idx].qty = nuevaCantidad;
+  } else {
+    CART.push({
+      product_id: p._id,
+      name: p.name,
+      sku: p.sku,
+      price: p.price,
+      stock: p.stock,
+      qty: qty
+    });
+  }
+
+  document.getElementById("productSearch").value = "";
+  document.getElementById("qtyInput").value = 1;
+
+  hint.textContent = "Producto agregado ✅";
+  hint.className = "text-success hint-text";
+
+  renderCart();
+}
+
+function removeItem(product_id) {
+  CART = CART.filter(x => x.product_id !== product_id);
+  renderCart();
+}
+
+function renderCart() {
+  const body = document.getElementById("cartBody");
+
+  if (CART.length === 0) {
+    body.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center empty-row">
+          Aún no agregas productos.
+        </td>
+      </tr>
+    `;
+    calcTotals();
+    return;
+  }
+
+  body.innerHTML = CART.map(it => `
+    <tr>
+      <td><strong>${it.name}</strong></td>
+      <td>${it.sku}</td>
+      <td>${money(it.price)}</td>
+      <td>${it.qty}</td>
+      <td><strong>${money(it.price * it.qty)}</strong></td>
+      <td class="text-end">
+        <button type="button" class="btn btn-sm btn-danger remove-btn" onclick="removeItem('${it.product_id}')">
+          <i class="bi bi-trash"></i> Quitar
+        </button>
+      </td>
+    </tr>
+  `).join("");
+
+  calcTotals();
+}
+
+function calcTotals() {
+  let subtotal = 0;
+
+  CART.forEach(it => {
+    subtotal += Number(it.price || 0) * Number(it.qty || 0);
+  });
+
+  document.getElementById("subtotalLabel").textContent = money(subtotal);
+  document.getElementById("totalLabel").textContent = money(subtotal);
+
+  document.getElementById("items_json").value = JSON.stringify(
+    CART.map(it => ({
+      product_id: it.product_id,
+      qty: it.qty
+    }))
+  );
+}
+
+document.getElementById("saleForm").addEventListener("submit", function(e) {
+  const saleType = document.getElementById("sale_type").value;
+  const clientMode = document.querySelector('input[name="client_mode"]:checked').value;
+
+  if (CART.length === 0) {
+    e.preventDefault();
+    alert("Agrega al menos un producto.");
+    return;
+  }
+
+  if (saleType === "credit") {
+    if (clientMode === "existing") {
+      const clientId = document.getElementById("client_id").value;
+      if (!clientId) {
+        e.preventDefault();
+        alert("Para venta a crédito selecciona un cliente.");
+        return;
+      }
+    }
+
+    if (clientMode === "new") {
+      const newClientName = document.getElementById("new_client_name").value.trim();
+      if (!newClientName) {
+        e.preventDefault();
+        alert("Para venta a crédito captura el nombre del nuevo cliente.");
+        return;
+      }
+    }
+
+    if (clientMode === "quick") {
+      e.preventDefault();
+      alert("La venta a crédito no puede ser venta rápida.");
+      return;
+    }
+  }
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+  buildIndexFromDatalist();
+  setClientMode();
+  calcTotals();
+});
+</script>
+{% endblock %}

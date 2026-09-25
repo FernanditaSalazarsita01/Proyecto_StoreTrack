@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}STORE TRACK | Ventas a crédito{% endblock %}
+
+{% block content %}
+
+<div class="panel">
+  <div class="ui-toolbar">
+    <div>
+      <h2 class="ui-title">Ventas a crédito</h2>
+      <div class="ui-sub">Ventas pendientes de pago de {{ session.company_name }}.</div>
+    </div>
+
+    <div class="toolbar-actions">
+      <form method="GET" action="/credito" class="search-box">
+        <input 
+          type="text" 
+          name="q" 
+          class="form-control" 
+          placeholder="Buscar por nombre, correo o teléfono"
+          value="{{ q or '' }}"
+        >
+
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-search"></i>
+        </button>
+
+        {% if q %}
+          <a href="/credito" class="btn btn-outline-secondary">
+            <i class="bi bi-x-circle"></i>
+          </a>
+        {% endif %}
+      </form>
+
+      <a href="/nueva-venta" class="btn btn-warning">
+        <i class="bi bi-hourglass-split"></i> Nueva venta a crédito
+      </a>
+    </div>
+  </div>
+
+  <div class="p-3">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show">
+            {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% if q %}
+      <div class="alert alert-info py-2">
+        Resultado de búsqueda para: <strong>{{ q }}</strong>
+      </div>
+    {% endif %}
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Contacto</th>
+            <th>Productos</th>
+            <th>Total</th>
+            <th>Abonado</th>
+            <th>Pendiente</th>
+            <th>Estado</th>
+            <th class="text-end">Acción</th>
+          </tr>
+        </thead>
+
+        <tbody>
+        {% if sales and sales|length > 0 %}
+          {% for s in sales %}
+            {% set total = s.get('total', 0)|float %}
+            {% set abonado = s.get('amount_paid', 0)|float %}
+            {% set pendiente = s.get('balance', total - abonado)|float %}
+
+            <tr>
+                <td class="text-end">
+  <div class="btn-group btn-group-sm">
+    <a href="/credito/{{ s.get('_id') }}" class="btn btn-primary">
+      <i class="bi bi-eye"></i> Detalle
+    </a>
+
+    <a href="/sales/{{ s.get('_id') }}/pdf/ticket" class="btn btn-outline-dark">
+      <i class="bi bi-receipt"></i> Ticket
+    </a>
+
+    <a href="/sales/{{ s.get('_id') }}/pdf/nota" class="btn btn-outline-primary">
+      <i class="bi bi-file-earmark-pdf"></i> Nota
+    </a>
+  </div>
+</td>
+              <td>
+                {{ s.get('created_at').strftime('%d/%m/%Y %H:%M') if s.get('created_at') else '' }}
+              </td>
+
+              <td>
+                <strong>{{ s.get('customer', {}).get('name', '') }}</strong><br>
+                <small class="text-muted">{{ s.get('customer', {}).get('address', '') }}</small>
+              </td>
+
+              <td>
+                {{ s.get('customer', {}).get('phone', '') }}<br>
+                <small class="text-muted">{{ s.get('customer', {}).get('email', '') }}</small>
+              </td>
+
+              <td>{{ s.get('items', [])|length }}</td>
+
+              <td>
+                <strong>${{ "%.2f"|format(total) }}</strong>
+              </td>
+
+              <td>
+                <span class="text-success fw-bold">
+                  ${{ "%.2f"|format(abonado) }}
+                </span>
+              </td>
+
+              <td>
+                <span class="text-danger fw-bold">
+                  ${{ "%.2f"|format(pendiente) }}
+                </span>
+              </td>
+
+              <td>
+                <span class="badge bg-warning text-dark">Pendiente</span>
+              </td>
+
+              <td class="text-end">
+                <a href="/credito/{{ s.get('_id') }}" class="btn btn-sm btn-primary">
+                  <i class="bi bi-eye"></i> Ver detalle
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="9" class="text-center text-muted py-4">
+              {% if q %}
+                No se encontraron ventas a crédito con ese nombre, correo o teléfono.
+              {% else %}
+                No hay ventas a crédito pendientes.
+              {% endif %}
+            </td>
+          </tr>
+        {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .panel{
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--panel-shadow);
+    border-radius:12px;
+    overflow:hidden;
+  }
+
+  .ui-toolbar{
+    padding:16px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .ui-title{
+    font-weight:900;
+    font-size:22px;
+    margin:0;
+  }
+
+  .ui-sub{
+    color:var(--muted);
+    font-size:12px;
+  }
+
+  .toolbar-actions{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  .search-box{
+    display:flex;
+    gap:8px;
+    min-width:360px;
+  }
+
+  table thead th{
+    background:#0f3c4c!important;
+    color:#fff!important;
+    font-size:12px;
+    white-space:nowrap;
+  }
+
+  table tbody td{
+    font-size:12px;
+  }
+
+  @media(max-width:768px){
+    .toolbar-actions{
+      width:100%;
+      justify-content:flex-start;
+    }
+
+    .search-box{
+      width:100%;
+      min-width:100%;
+    }
+  }
+</style>
+{% endblock %}
