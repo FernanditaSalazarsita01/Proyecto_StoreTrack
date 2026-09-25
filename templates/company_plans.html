@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}STORE TRACK | Planes{% endblock %}
+
+{% block content %}
+
+<div class="plans-header">
+  <h2>Planes de Store Track</h2>
+  <p>Selecciona el plan que mejor se adapte a las operaciones de tu empresa.</p>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="mb-3">
+      {% for category, msg in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show">
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="plans-grid">
+
+  <div class="plan-card {% if current_plan == 'basic' %}current{% endif %}">
+    <h3>Básico</h3>
+    <p>Ideal para pequeñas empresas que inician con la gestión digital de sus productos.</p>
+
+    <div class="price">
+      $199 <span>/ mes</span>
+    </div>
+
+    <ul>
+      <li><i class="bi bi-check"></i> 2 Usuarios</li>
+      <li><i class="bi bi-check"></i> Gestión de productos</li>
+      <li><i class="bi bi-check"></i> Panel administrativo</li>
+      <li><i class="bi bi-check"></i> Ventas Rapidas</li>
+      <li><i class="bi bi-check"></i> Respaldo manual</li>
+      <li><i class="bi bi-check"></i> Soporte básico</li>
+    </ul>
+
+    <form method="POST" action="/empresa/planes/select">
+      <input type="hidden" name="plan" value="basic">
+      <button type="submit" class="btn-plan {% if current_plan == 'basic' %}active{% endif %}">
+        {% if current_plan == 'basic' %}
+          Plan actual
+        {% else %}
+          Seleccionar plan
+        {% endif %}
+      </button>
+    </form>
+  </div>
+
+  <div class="plan-card popular {% if current_plan == 'professional' %}current{% endif %}">
+    <div class="badge-popular">Más popular</div>
+
+    <h3>Profesional</h3>
+    <p>Para empresas en crecimiento que necesitan mayor control, ventas y respaldos personalizados.</p>
+
+    <div class="price">
+      $499 <span>/ mes</span>
+    </div>
+
+    <ul>
+      <li><i class="bi bi-check"></i> Hasta 5 usuarios</li>
+      <li><i class="bi bi-check"></i> Gestión de productos</li>
+      <li><i class="bi bi-check"></i> Ventas Rapidas</li>
+      <li><i class="bi bi-check"></i> Ventas a crédito</li>
+      <li><i class="bi bi-check"></i> Reportes y análisis</li>
+      <li><i class="bi bi-check"></i> Respaldos personalizados</li>
+      <li><i class="bi bi-check"></i> Soporte prioritario</li>
+    </ul>
+
+    <form method="POST" action="/empresa/planes/select">
+      <input type="hidden" name="plan" value="professional">
+      <button type="submit" class="btn-plan main {% if current_plan == 'professional' %}active{% endif %}">
+        {% if current_plan == 'professional' %}
+          Plan actual
+        {% else %}
+          Seleccionar plan
+        {% endif %}
+      </button>
+    </form>
+  </div>
+
+  <div class="plan-card {% if current_plan == 'enterprise' %}current{% endif %}">
+    <h3>Empresarial</h3>
+    <p>Pensado para organizaciones que requieren administración avanzada y personalización.</p>
+
+    <div class="price">
+      $999 <span>/ mes</span>
+    </div>
+
+    <ul>
+      <li><i class="bi bi-check"></i> Usuarios ilimitados</li>
+      <li><i class="bi bi-check"></i> Multiempresa avanzado</li>
+      <li><i class="bi bi-check"></i> Reportes ejecutivos</li>
+      <li><i class="bi bi-check"></i> Respaldos automáticos</li>
+      <li><i class="bi bi-check"></i> Personalización de PDFs</li>
+      <li><i class="bi bi-check"></i> Logo y marca de agua</li>
+      <li><i class="bi bi-check"></i> Soporte premium</li>
+    </ul>
+
+    <form method="POST" action="/empresa/planes/select">
+      <input type="hidden" name="plan" value="enterprise">
+      <button type="submit" class="btn-plan {% if current_plan == 'enterprise' %}active{% endif %}">
+        {% if current_plan == 'enterprise' %}
+          Plan actual
+        {% else %}
+          Seleccionar plan
+        {% endif %}
+      </button>
+    </form>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .plans-header{
+    text-align:center;
+    margin-bottom:28px;
+  }
+
+  .plans-header h2{
+    font-size:30px;
+    font-weight:900;
+    margin-bottom:8px;
+  }
+
+  .plans-header p{
+    color:var(--muted);
+    margin:0;
+  }
+
+  .plans-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:22px;
+  }
+
+  .plan-card{
+    position:relative;
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:22px;
+    padding:32px;
+    box-shadow:0 10px 28px rgba(15,23,42,.08);
+  }
+
+  .plan-card.current{
+    box-shadow:0 0 0 3px rgba(37,99,235,.18), 0 12px 32px rgba(15,23,42,.10);
+  }
+
+  .plan-card.popular{
+    border:2px solid #2563eb;
+    transform:translateY(-6px);
+  }
+
+  .badge-popular{
+    position:absolute;
+    top:-18px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#2563eb;
+    color:#fff;
+    padding:10px 22px;
+    border-radius:999px;
+    font-size:14px;
+    font-weight:900;
+  }
+
+  .plan-card h3{
+    font-size:26px;
+    font-weight:900;
+    margin-bottom:10px;
+  }
+
+  .plan-card p{
+    color:#64748b;
+    min-height:72px;
+    line-height:1.5;
+  }
+
+  .price{
+    font-size:44px;
+    font-weight:900;
+    margin:22px 0;
+    color:#0f172a;
+  }
+
+  .price span{
+    font-size:16px;
+    color:#64748b;
+    font-weight:500;
+  }
+
+  .plan-card ul{
+    list-style:none;
+    padding:0;
+    margin:0 0 26px;
+  }
+
+  .plan-card li{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:14px;
+    font-size:15px;
+    color:#0f172a;
+  }
+
+  .plan-card li i{
+    width:24px;
+    height:24px;
+    background:#dcfce7;
+    color:#16a34a;
+    border-radius:50%;
+    display:inline-flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:900;
+  }
+
+  .btn-plan{
+    width:100%;
+    border:0;
+    border-radius:16px;
+    padding:16px;
+    font-weight:900;
+    color:#2563eb;
+    background:#eef2ff;
+    font-size:17px;
+  }
+
+  .btn-plan.main,
+  .btn-plan:hover{
+    background:#2563eb;
+    color:#fff;
+  }
+
+  .btn-plan.active{
+    background:#16a34a;
+    color:#fff;
+  }
+
+  @media(max-width:992px){
+    .plans-grid{
+      grid-template-columns:1fr;
+    }
+
+    .plan-card.popular{
+      transform:none;
+    }
+  }
+</style>
+{% endblock %}
