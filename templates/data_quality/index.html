@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}STORE TRACK | Calidad de Datos{% endblock %}
+
+{% block extra_css %}
+<style>
+  .quality-header{
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--panel-shadow);
+    border-radius:14px;
+    padding:20px;
+    margin-bottom:20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    flex-wrap:wrap;
+  }
+
+  .quality-header h2{
+    margin:0;
+    font-weight:900;
+    color:#1f2937;
+  }
+
+  .quality-header p{
+    margin:4px 0 0;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  .status-badge{
+    padding:10px 16px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:13px;
+  }
+
+  .status-ok{
+    background:#dcfce7;
+    color:#166534;
+  }
+
+  .status-warning{
+    background:#fee2e2;
+    color:#991b1b;
+  }
+
+  .summary-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+    gap:14px;
+    margin-bottom:20px;
+  }
+
+  .summary-card{
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--panel-shadow);
+    border-radius:14px;
+    padding:16px;
+  }
+
+  .summary-card small{
+    color:var(--muted);
+    font-weight:700;
+  }
+
+  .summary-card div{
+    font-size:28px;
+    font-weight:900;
+    margin-top:4px;
+  }
+
+  .quality-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(270px, 1fr));
+    gap:16px;
+  }
+
+  .quality-card{
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--panel-shadow);
+    border-radius:14px;
+    padding:18px;
+  }
+
+  .quality-card .icon{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+    margin-bottom:12px;
+  }
+
+  .quality-card h4{
+    margin:0;
+    font-size:15px;
+    font-weight:900;
+    color:#1f2937;
+  }
+
+  .quality-card p{
+    margin:6px 0 0;
+    color:var(--muted);
+    font-size:12px;
+  }
+
+  .quality-number{
+    margin-top:14px;
+    font-size:34px;
+    font-weight:900;
+  }
+
+  .ok{ color:#16a34a; }
+  .bad{ color:#dc2626; }
+
+  .bg-blue{ background:#dbeafe; color:#1d4ed8; }
+  .bg-orange{ background:#ffedd5; color:#c2410c; }
+  .bg-green{ background:#dcfce7; color:#15803d; }
+  .bg-purple{ background:#f3e8ff; color:#7e22ce; }
+  .bg-red{ background:#fee2e2; color:#b91c1c; }
+
+  .samples{
+    margin-top:12px;
+    background:#f8fafc;
+    border-radius:10px;
+    padding:10px;
+    font-size:12px;
+  }
+
+  .samples strong{
+    display:block;
+    margin-bottom:6px;
+  }
+
+  .samples ul{
+    margin:0;
+    padding-left:18px;
+  }
+
+  .recommendation{
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--panel-shadow);
+    border-radius:14px;
+    padding:18px;
+    margin-top:20px;
+  }
+
+  .recommendation h4{
+    font-weight:900;
+    font-size:16px;
+    margin-bottom:10px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="quality-header">
+  <div>
+    <h2>Calidad de Datos</h2>
+    <p>
+      Revisión automática de registros incompletos para
+      {{ session.company_name }}.
+    </p>
+  </div>
+
+  <div class="d-flex align-items-center gap-2 flex-wrap">
+
+    <a
+      href="{{ url_for('analytics.company_random_forest') }}"
+      class="btn btn-primary"
+    >
+      <i class="bi bi-tree-fill me-1"></i>
+      Random Forest
+    </a>
+
+    <a
+      href="{{ url_for('analytics.company_kmeans') }}"
+      class="btn btn-dark"
+    >
+      <i class="bi bi-diagram-3-fill me-1"></i>
+      K-Means
+    </a>
+
+    {% if total_issues == 0 %}
+      <span class="status-badge status-ok">
+        <i class="bi bi-check-circle"></i>
+        Sin incidencias
+      </span>
+    {% else %}
+      <span class="status-badge status-warning">
+        <i class="bi bi-exclamation-triangle"></i>
+        {{ total_issues }} incidencias detectadas
+      </span>
+    {% endif %}
+
+  </div>
+</div>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <small>Total productos</small>
+    <div>{{ totals.products }}</div>
+  </div>
+
+  <div class="summary-card">
+    <small>Total ventas</small>
+    <div>{{ totals.sales }}</div>
+  </div>
+
+  <div class="summary-card">
+    <small>Total clientes</small>
+    <div>{{ totals.clients }}</div>
+  </div>
+
+  <div class="summary-card">
+    <small>Incidencias</small>
+    <div class="{{ 'ok' if total_issues == 0 else 'bad' }}">{{ total_issues }}</div>
+  </div>
+</div>
+
+<div class="quality-grid">
+
+  {% for item in checks %}
+  <div class="quality-card">
+    <div class="icon {{ item.color }}">
+      <i class="bi {{ item.icon }}"></i>
+    </div>
+
+    <h4>{{ item.title }}</h4>
+    <p>{{ item.description }}</p>
+
+    <div class="quality-number {{ 'ok' if item.count == 0 else 'bad' }}">
+      {{ item.count }}
+    </div>
+
+    {% if item.count > 0 %}
+      <div class="samples">
+        <strong>Ejemplos detectados:</strong>
+        <ul>
+          {% for s in item.samples %}
+            <li>
+              ID: {{ s.get('_id') }}
+              {% if s.get('name') %} | {{ s.get('name') }}{% endif %}
+              {% if s.get('sku') %} | SKU: {{ s.get('sku') }}{% endif %}
+              {% if s.get('email') %} | {{ s.get('email') }}{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+</div>
+
+<div class="recommendation">
+  <h4>Recomendaciones</h4>
+
+  {% if total_issues == 0 %}
+    <p class="text-success mb-0">
+      La información principal se encuentra completa. No se detectaron registros incompletos.
+    </p>
+  {% else %}
+    <ul>
+      <li>Corrige los registros listados en cada tarjeta.</li>
+      <li>Verifica productos sin precio o stock antes de registrar ventas.</li>
+      <li>Completa categoría y proveedor para mejorar reportes.</li>
+      <li>Valida ventas sin total para evitar inconsistencias financieras.</li>
+    </ul>
+  {% endif %}
+</div>
+
+{% endblock %}
