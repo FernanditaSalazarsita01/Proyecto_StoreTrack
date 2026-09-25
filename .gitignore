@@ -33,3 +33,9 @@ Thumbs.db
 *.db
 *.sqlite
 *.sqlite3
+
+# Archivos cargados por usuarios
+static/uploads/
+
+# Modelos entrenados generados
+trained_models/
