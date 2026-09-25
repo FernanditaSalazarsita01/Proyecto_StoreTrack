@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% block title %}Modelo de {{ company.name }}{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+    <div>
+     
+    </div>
+    <div class="d-flex gap-2">
+ 
+      <form method="post" action="{{ url_for('analytics.train_developer_company_model', company_id=company.id) }}">
+        <button class="btn btn-primary" type="submit">
+          {% if model %}Actualizar modelo{% elif ready %}Entrenar modelo{% else %}Comprobar entrenamiento{% endif %}
+        </button>
+      </form>
+      <a
+  href="{{ url_for(
+    'analytics.developer_trial_error',
+    company_id=company.id
+  ) }}"
+  class="btn btn-outline-warning"
+>
+  Prueba y error
+</a>
+    </div>
+  </div>
+
+  <div class="alert alert-{{ status.badge }} border-0 shadow-sm d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <strong>Estado: {{ status.label }}</strong>
+      <div>{{ status.reason }}</div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3 col-xl-2"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">TODAS LAS VENTAS</div><div class="h2 fw-bold mb-0">{{ summary.total_sales }}</div></div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">CON CLIENTE</div><div class="h2 fw-bold mb-0">{{ summary.identified_sales }}</div></div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">VENTAS RÁPIDAS</div><div class="h2 fw-bold mb-0">{{ summary.quick_sales }}</div></div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">CLIENTES</div><div class="h2 fw-bold mb-0">{{ summary.registered_clients }}</div></div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">EJEMPLOS ML</div><div class="h2 fw-bold mb-0">{{ summary.training_rows }}</div><div class="small text-muted">Sí: {{ summary.positive_rows }} | No: {{ summary.negative_rows }}</div></div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">MODELO</div><div class="h5 fw-bold mb-0 mt-2">{% if model %}Entrenado{% else %}No entrenado{% endif %}</div></div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="text-muted small">EXACTITUD</div><div class="h2 fw-bold mb-0">{% if model %}{{ (model.metrics.accuracy * 100)|round(2) }}%{% else %}—{% endif %}</div></div></div></div>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h5 class="fw-bold mb-0">Clientes registrados</h5>
+        <span class="small text-muted">La predicción aparece únicamente cuando existe un modelo entrenado.</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Correo</th>
+              <th>Ventas</th>
+              <th>Total comprado</th>
+              <th>Última compra</th>
+              <th>Probabilidad</th>
+              <th>Predicción</th>
+              <th>Segmento K-Means</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for client in clients_status %}
+            <tr>
+              <td>{{ client.client_name }}</td>
+              <td>{{ client.email or "—" }}</td>
+              <td>{{ client.sales_count }}</td>
+              <td>${{ "{:,.2f}".format(client.total_spent) }}</td>
+              <td>{% if client.last_purchase_at %}{{ client.last_purchase_at.strftime("%d/%m/%Y %H:%M") }}{% else %}—{% endif %}</td>
+              <td>{% if client.probability is not none %}<strong>{{ client.probability }}%</strong>{% else %}—{% endif %}</td>
+              <td>
+                {% if client.prediction_status == "available" %}
+                  {% if client.level == "Alta" %}<span class="badge text-bg-success">Alta</span>
+                  {% elif client.level == "Media" %}<span class="badge text-bg-warning">Media</span>
+                  {% else %}<span class="badge text-bg-danger">Baja</span>{% endif %}
+                {% elif client.prediction_status == "no_sales" %}
+                  <span class="badge text-bg-secondary">Sin ventas</span>
+                {% elif client.prediction_status == "no_model" %}
+                  <span class="badge text-bg-secondary">Modelo no disponible</span>
+                {% else %}
+                  <span class="badge text-bg-secondary">Sin datos suficientes</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if client.segment_name %}
+                  <span class="badge rounded-pill text-bg-info">{{ client.segment_name }}</span>
+                  <div class="small text-muted mt-1">Clúster {{ client.cluster }}</div>
+                {% elif client.has_sales %}
+                  <span class="text-muted">Sin análisis</span>
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="8" class="text-center text-muted py-4">No existen clientes.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  
+
+  {% if model %}
+    <div class="card border-0 shadow-sm mb-4"><div class="card-body">
+      <h5 class="fw-bold mb-3">Métricas del modelo</h5>
+      {% if model.evaluation_mode == "demo_training_data" %}
+        <div class="alert alert-warning py-2">Modo demostración: la exactitud fue calculada con los mismos datos usados para entrenar y puede verse más alta de lo real.</div>
+      {% endif %}
+      <div class="row g-3">
+        <div class="col-md-3">Exactitud: <strong>{{ (model.metrics.accuracy * 100)|round(2) }}%</strong></div>
+        <div class="col-md-3">Precisión: <strong>{{ (model.metrics.precision * 100)|round(2) }}%</strong></div>
+        <div class="col-md-3">Sensibilidad: <strong>{{ (model.metrics.recall * 100)|round(2) }}%</strong></div>
+        <div class="col-md-3">F1: <strong>{{ (model.metrics.f1 * 100)|round(2) }}%</strong></div>
+      </div>
+    </div></div>
+
+    {% set feature_names = {
+      "purchase_count": "Frecuencia de compra",
+      "days_since_last_purchase": "Días desde última compra",
+      "avg_days_between_purchases": "Promedio de días entre compras",
+      "avg_purchase": "Ticket promedio",
+      "total_spent": "Total comprado",
+      "purchases_last_30_days": "Compras recientes",
+      "purchases_last_90_days": "Compras históricas",
+      "unique_products": "Productos distintos",
+      "total_units": "Unidades compradas",
+      "credit_purchase_ratio": "Proporción de ventas a crédito"
+    } %}
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h5 class="fw-bold mb-2">Importancia de variables</h5>
+        <p class="text-muted small mb-4">Porcentaje de influencia de cada dato en las decisiones del Random Forest.</p>
+
+        {% for item in model.feature_importance[:5] %}
+          {% set percentage = item.importance * 100 %}
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="fw-semibold">{{ feature_names.get(item.feature, item.feature) }}</span>
+              <span>{{ percentage|round(2) }}%</span>
+            </div>
+            <div class="progress" role="progressbar" aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100" style="height: 10px;">
+              <div class="progress-bar" style="width: {{ percentage }}%;"></div>
+            </div>
+          </div>
+
+          
+        {% endfor %}
+      </div>
+    </div>
+    
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+          <h5 class="fw-bold mb-1">Datos usados por Random Forest</h5>
+          <p class="text-muted small mb-0">Cada fila es un ejemplo histórico generado en una fecha de corte. Se muestran los 20 más recientes.</p>
+        </div>
+        <span class="badge text-bg-light">Objetivo: el cliente vuelve a comprar posteriormente</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Fecha de corte</th>
+              <th>Compras</th>
+              <th>Gasto total</th>
+              <th>Ticket promedio</th>
+              <th>Días desde compra anterior</th>
+              <th>Compras recientes</th>
+              <th>Compras históricas</th>
+              <th>Productos</th>
+              <th>Unidades</th>
+              <th>Recompró después</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for row in training_preview %}
+            <tr>
+              <td class="fw-semibold">{{ row.client_name or "Cliente sin nombre" }}</td>
+              <td>{{ row.reference_date.strftime("%d/%m/%Y %H:%M") }}</td>
+              <td>{{ row.purchase_count|int }}</td>
+              <td>${{ "{:,.2f}".format(row.total_spent) }}</td>
+              <td>${{ "{:,.2f}".format(row.avg_purchase) }}</td>
+              <td>{{ row.days_since_last_purchase|int }}</td>
+              <td>{{ row.purchases_last_30_days|int }}</td>
+              <td>{{ row.purchases_last_90_days|int }}</td>
+              <td>{{ row.unique_products|int }}</td>
+              <td>{{ row.total_units|int }}</td>
+              <td>
+                {% if row.repurchased_later == 1 %}
+                  <span class="badge text-bg-success">Sí</span>
+                {% else %}
+                  <span class="badge text-bg-secondary">No</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="11" class="text-center text-muted py-4">
+                Todavía no existen ejemplos. Registra ventas asociadas a clientes para construir la tabla.
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% else %}
+
+  
+
+  
+    <div class="alert alert-info">
+      Para entrenar se requieren al menos <strong>{{ min_training_rows }} ejemplos</strong>,
+      <strong>un caso de recompra</strong>, <strong>un caso de no recompra</strong>
+      y <strong>{{ min_customers }} clientes con ventas</strong>.
+      <hr>
+      Actualmente hay {{ summary.training_rows }} ejemplos, {{ summary.positive_rows }} recompras,
+      {{ summary.negative_rows }} no recompras y {{ summary.customers_with_sales }} clientes con ventas.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+  {{ super() }}
+  {% if cluster_analysis.available %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script>
+      (() => {
+        const elbowRows = {{ cluster_analysis.elbow_data | tojson }};
+        const clusterRows = {{ cluster_analysis.summary | tojson }};
+        const suggestedK = {{ cluster_analysis.suggested_k }};
+
+        const elbowCanvas = document.getElementById('elbowChart');
+        if (elbowCanvas) {
+          new Chart(elbowCanvas, {
+            type: 'line',
+            data: {
+              labels: elbowRows.map(row => `K = ${row.k}`),
+              datasets: [{
+                label: 'Inercia',
+                data: elbowRows.map(row => row.inertia),
+                tension: 0.2,
+                pointRadius: elbowRows.map(row => row.k === suggestedK ? 7 : 4),
+                pointHoverRadius: 8
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                tooltip: { callbacks: { afterLabel: context => elbowRows[context.dataIndex].k === suggestedK ? 'K sugerido' : '' } }
+              },
+              scales: {
+                x: { title: { display: true, text: 'Número de clústeres (K)' } },
+                y: { beginAtZero: true, title: { display: true, text: 'Inercia' } }
+              }
+            }
+          });
+        }
+
+        const distributionCanvas = document.getElementById('clusterDistributionChart');
+        if (distributionCanvas) {
+          new Chart(distributionCanvas, {
+            type: 'doughnut',
+            data: {
+              labels: clusterRows.map(row => row.segment_name),
+              datasets: [{ data: clusterRows.map(row => row.customers) }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { position: 'bottom' } }
+            }
+          });
+        }
+      })();
+    </script>
+  {% endif %}
+{% endblock %}

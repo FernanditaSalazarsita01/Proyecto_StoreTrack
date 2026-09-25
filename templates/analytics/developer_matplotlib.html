@@ -1,0 +1,1415 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  :root {
+    --mp-bg: #f3f6fb;
+    --mp-surface: #ffffff;
+    --mp-surface-soft: #f8fafc;
+    --mp-text: #0f172a;
+    --mp-muted: #64748b;
+    --mp-border: #e2e8f0;
+    --mp-primary: #2563eb;
+    --mp-primary-dark: #1d4ed8;
+    --mp-purple: #7c3aed;
+    --mp-green: #0f766e;
+    --mp-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+    --mp-shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.06);
+    --mp-radius: 24px;
+  }
+
+  .mp-page {
+    min-height: calc(100vh - 110px);
+    background:
+      radial-gradient(circle at 95% 0%, rgba(37, 99, 235, 0.08), transparent 30%),
+      radial-gradient(circle at 0% 30%, rgba(124, 58, 237, 0.06), transparent 25%),
+      var(--mp-bg);
+    padding: 8px 0 36px;
+  }
+
+  .mp-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 30px;
+    margin-bottom: 20px;
+    border-radius: 28px;
+    background: linear-gradient(135deg, #0f172a 0%, #172554 50%, #1d4ed8 100%);
+    color: #fff;
+    box-shadow: var(--mp-shadow);
+  }
+
+  .mp-hero::after {
+    content: "";
+    position: absolute;
+    width: 340px;
+    height: 340px;
+    right: -120px;
+    top: -160px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .mp-hero-row {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 22px;
+    flex-wrap: wrap;
+  }
+
+  .mp-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 11px;
+    margin-bottom: 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.10);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .mp-title {
+    margin: 0;
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    font-weight: 950;
+    letter-spacing: -.045em;
+  }
+
+  .mp-subtitle {
+    max-width: 760px;
+    margin: 10px 0 0;
+    color: rgba(255,255,255,.78);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .mp-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 15px;
+    border-radius: 14px;
+    background: rgba(255,255,255,.96);
+    color: #1e3a8a;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 900;
+    box-shadow: 0 12px 28px rgba(0,0,0,.16);
+  }
+
+  .mp-back:hover {
+    color: #1d4ed8;
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  .mp-filter-card {
+    padding: 20px;
+    margin-bottom: 18px;
+    border: 1px solid var(--mp-border);
+    border-radius: var(--mp-radius);
+    background: var(--mp-surface);
+    box-shadow: var(--mp-shadow-soft);
+  }
+
+  .mp-filter-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .mp-filter-title {
+    margin: 0;
+    color: var(--mp-text);
+    font-size: 1rem;
+    font-weight: 950;
+  }
+
+  .mp-tech {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 11px;
+    font-weight: 900;
+  }
+
+  .mp-filter-grid {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) minmax(210px, .55fr) auto;
+    gap: 14px;
+    align-items: end;
+  }
+
+  .mp-field label {
+    display: block;
+    margin-bottom: 7px;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+
+  .mp-control {
+    width: 100%;
+    height: 46px;
+    padding: 0 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 13px;
+    background: #fff;
+    color: var(--mp-text);
+    outline: none;
+    transition: .2s ease;
+  }
+
+  .mp-control:focus {
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 4px rgba(37,99,235,.08);
+  }
+
+  .mp-submit {
+    height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 13px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 10px 22px rgba(37,99,235,.20);
+  }
+
+  .mp-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .mp-kpi {
+    position: relative;
+    overflow: hidden;
+    padding: 20px;
+    border: 1px solid var(--mp-border);
+    border-radius: 20px;
+    background: var(--mp-surface);
+    box-shadow: var(--mp-shadow-soft);
+  }
+
+  .mp-kpi::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--accent, var(--mp-primary));
+  }
+
+  .mp-kpi-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .mp-kpi-label {
+    color: var(--mp-muted);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  .mp-kpi-icon {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: #f1f5f9;
+    color: var(--accent, var(--mp-primary));
+    font-size: 18px;
+  }
+
+  .mp-kpi-value {
+    margin-top: 12px;
+    color: var(--mp-text);
+    font-size: 1.75rem;
+    font-weight: 950;
+    letter-spacing: -.04em;
+  }
+
+  .mp-kpi-note {
+    margin-top: 5px;
+    color: var(--mp-muted);
+    font-size: 12px;
+  }
+
+  .mp-period {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 16px;
+    margin-bottom: 18px;
+    border: 1px solid #bfdbfe;
+    border-radius: 16px;
+    background: #eff6ff;
+    color: #1e3a8a;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .mp-chart-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .mp-chart-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--mp-border);
+    border-radius: var(--mp-radius);
+    background: var(--mp-surface);
+    box-shadow: var(--mp-shadow-soft);
+  }
+
+  .mp-chart-card-wide {
+    grid-column: 1 / -1;
+  }
+
+  .mp-chart-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 20px 22px 0;
+  }
+
+  .mp-chart-title {
+    margin: 0;
+    color: var(--mp-text);
+    font-size: 1.03rem;
+    font-weight: 950;
+    letter-spacing: -.02em;
+  }
+
+  .mp-chart-subtitle {
+    margin: 5px 0 0;
+    color: var(--mp-muted);
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  .mp-chart-badge {
+    flex: 0 0 auto;
+    padding: 6px 9px;
+    border-radius: 999px;
+    background: var(--mp-surface-soft);
+    color: #475569;
+    border: 1px solid var(--mp-border);
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+
+  .mp-chart-body {
+    padding: 6px 10px 12px;
+  }
+
+  .mp-chart-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 18px;
+  }
+
+  .mp-insights {
+    margin-top: 18px;
+    padding: 22px;
+    border: 1px solid var(--mp-border);
+    border-radius: var(--mp-radius);
+    background: var(--mp-surface);
+    box-shadow: var(--mp-shadow-soft);
+  }
+
+  .mp-insights-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0 0 15px;
+    color: var(--mp-text);
+    font-size: 1.05rem;
+    font-weight: 950;
+  }
+
+  .mp-insights-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mp-insights-list li {
+    position: relative;
+    padding: 12px 14px 12px 42px;
+    border: 1px solid var(--mp-border);
+    border-radius: 14px;
+    background: var(--mp-surface-soft);
+    color: #334155;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .mp-insights-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 14px;
+    top: 12px;
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    border-radius: 7px;
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 11px;
+    font-weight: 950;
+  }
+
+
+  /* =========================================================
+     DISEÑO PRO PARA CONTENEDORES DE GRÁFICAS
+     Solo presentación: no modifica datos ni funcionamiento.
+     ========================================================= */
+
+  .mp-chart-grid {
+    gap: 22px;
+  }
+
+  .mp-chart-card {
+    isolation: isolate;
+    transition:
+      transform .22s ease,
+      box-shadow .22s ease,
+      border-color .22s ease;
+  }
+
+  .mp-chart-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 4px;
+    background: var(--chart-accent, #2563eb);
+    z-index: 2;
+  }
+
+  .mp-chart-card::after {
+    content: "";
+    position: absolute;
+    width: 190px;
+    height: 190px;
+    right: -85px;
+    top: -95px;
+    border-radius: 999px;
+    background: color-mix(
+      in srgb,
+      var(--chart-accent, #2563eb) 9%,
+      transparent
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .mp-chart-card:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(
+      in srgb,
+      var(--chart-accent, #2563eb) 26%,
+      #e2e8f0
+    );
+    box-shadow: 0 22px 55px rgba(15, 23, 42, 0.10);
+  }
+
+  .mp-chart-card-monthly {
+    --chart-accent: #2563eb;
+  }
+
+  .mp-chart-card-company {
+    --chart-accent: #0f766e;
+  }
+
+  .mp-chart-card-product {
+    --chart-accent: #7c3aed;
+  }
+
+  .mp-chart-head {
+    position: relative;
+    z-index: 1;
+    padding: 24px 24px 12px;
+    border-bottom: 1px solid #eef2f7;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--chart-accent, #2563eb) 5%, #ffffff) 0%,
+        #ffffff 100%
+      );
+  }
+
+  .mp-chart-title-wrap {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .mp-chart-icon {
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 13px;
+    background: color-mix(
+      in srgb,
+      var(--chart-accent, #2563eb) 11%,
+      #ffffff
+    );
+    color: var(--chart-accent, #2563eb);
+    font-size: 19px;
+    box-shadow: inset 0 0 0 1px color-mix(
+      in srgb,
+      var(--chart-accent, #2563eb) 15%,
+      transparent
+    );
+  }
+
+  .mp-chart-title {
+    font-size: 1.08rem;
+    line-height: 1.35;
+  }
+
+  .mp-chart-subtitle {
+    max-width: 680px;
+    margin-top: 6px;
+  }
+
+  .mp-chart-badge {
+    position: relative;
+    z-index: 1;
+    background: color-mix(
+      in srgb,
+      var(--chart-accent, #2563eb) 8%,
+      #ffffff
+    );
+    border-color: color-mix(
+      in srgb,
+      var(--chart-accent, #2563eb) 18%,
+      #e2e8f0
+    );
+    color: var(--chart-accent, #2563eb);
+  }
+
+  .mp-chart-body {
+    position: relative;
+    z-index: 1;
+    padding: 18px 18px 10px;
+    background: #ffffff;
+  }
+
+  .mp-chart-frame {
+    position: relative;
+    overflow: hidden;
+    padding: 8px;
+    border: 1px solid #e9eef5;
+    border-radius: 20px;
+    background:
+      linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.9),
+      0 8px 22px rgba(15,23,42,.035);
+  }
+
+  .mp-chart-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 15px;
+    object-fit: contain;
+    background: #ffffff;
+  }
+
+  .mp-axis-guide {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 12px 18px 18px;
+    border-top: 1px solid #f1f5f9;
+    background: #ffffff;
+  }
+
+  .mp-axis-pill {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid #e8edf4;
+    border-radius: 13px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 11.5px;
+    line-height: 1.35;
+  }
+
+  .mp-axis-pill strong {
+    color: var(--mp-text);
+    font-weight: 900;
+  }
+
+  .mp-axis-dot {
+    flex: 0 0 auto;
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    background: var(--chart-accent, #2563eb);
+    box-shadow: 0 0 0 4px color-mix(
+      in srgb,
+      var(--chart-accent, #2563eb) 10%,
+      transparent
+    );
+  }
+
+  .mp-chart-footer-note {
+    padding: 0 20px 18px;
+    color: #94a3b8;
+    font-size: 10.5px;
+    line-height: 1.5;
+    background: #ffffff;
+  }
+
+
+
+  /* =========================================================
+     EXPORTACIÓN DE GRÁFICAS SELECCIONADAS
+     ========================================================= */
+  .mp-export-panel {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 0 0 18px;
+    padding: 14px 16px;
+    border: 1px solid var(--mp-border);
+    border-radius: 18px;
+    background: var(--mp-surface);
+    box-shadow: var(--mp-shadow-soft);
+  }
+
+  .mp-export-info {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 240px;
+  }
+
+  .mp-export-icon {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: #eef4f8;
+    color: #2f5d8c;
+    font-size: 18px;
+  }
+
+  .mp-export-title {
+    margin: 0;
+    color: var(--mp-text);
+    font-size: 13px;
+    font-weight: 950;
+  }
+
+  .mp-export-subtitle {
+    margin: 3px 0 0;
+    color: var(--mp-muted);
+    font-size: 11px;
+  }
+
+  .mp-export-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+  }
+
+  .mp-export-btn {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 13px;
+    border: 1px solid var(--mp-border);
+    border-radius: 12px;
+    background: #ffffff;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: .2s ease;
+  }
+
+  .mp-export-btn:hover {
+    transform: translateY(-1px);
+    border-color: #b8c5d3;
+    box-shadow: 0 7px 18px rgba(15, 23, 42, .07);
+  }
+
+  .mp-export-btn-pdf {
+    border-color: #e6c7cb;
+    background: #fbf3f4;
+    color: #9a4450;
+  }
+
+  .mp-export-btn-excel {
+    border-color: #c8ddd8;
+    background: #f0f7f5;
+    color: #356f67;
+  }
+
+  .mp-export-btn:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .mp-chart-select {
+    position: absolute;
+    top: 13px;
+    right: 13px;
+    z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 10px;
+    border: 1px solid #dbe3eb;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .96);
+    color: #475569;
+    font-size: 10.5px;
+    font-weight: 900;
+    box-shadow: 0 5px 14px rgba(15, 23, 42, .07);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .mp-chart-select input {
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    accent-color: var(--chart-accent, #2f5d8c);
+    cursor: pointer;
+  }
+
+  .mp-chart-card.is-selected {
+    border-color: color-mix(
+      in srgb,
+      var(--chart-accent, #2f5d8c) 42%,
+      #dfe5ec
+    );
+    box-shadow: 0 18px 42px rgba(15, 23, 42, .11);
+  }
+
+  .mp-selection-counter {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #526071;
+    font-size: 11px;
+    font-weight: 900;
+  }
+
+  @media (max-width: 700px) {
+    .mp-export-panel,
+    .mp-export-actions {
+      align-items: stretch;
+    }
+
+    .mp-export-actions {
+      width: 100%;
+    }
+
+    .mp-export-btn {
+      flex: 1 1 auto;
+    }
+
+    .mp-chart-select {
+      top: 10px;
+      right: 10px;
+    }
+  }
+
+  @media (max-width: 1050px) {
+    .mp-filter-grid,
+    .mp-kpi-grid,
+    .mp-chart-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .mp-chart-card-wide {
+      grid-column: auto;
+    }
+
+    .mp-axis-guide {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .mp-hero {
+      padding: 24px;
+      border-radius: 22px;
+    }
+
+    .mp-chart-head {
+      padding: 18px 18px 0;
+    }
+
+    .mp-chart-body {
+      padding: 5px 4px 10px;
+    }
+  }
+</style>
+
+<div class="mp-page">
+
+  <section class="mp-hero">
+    <div class="mp-hero-row">
+      <div>
+        
+
+       
+
+      </div>
+
+      <a href="{{ url_for('developer_home') }}" class="mp-back">
+        <i class="bi bi-arrow-left"></i>
+        Volver al dashboard
+      </a>
+    </div>
+  </section>
+
+  <form method="GET" class="mp-filter-card">
+    <div class="mp-filter-header">
+      <h2 class="mp-filter-title">Configurar análisis</h2>
+      <div class="mp-tech">
+        <i class="bi bi-bar-chart-line-fill"></i>
+        Gráficas server-side
+      </div>
+    </div>
+
+    <div class="mp-filter-grid">
+      <div class="mp-field">
+        <label for="company_id">Empresa</label>
+        <select name="company_id" id="company_id" class="mp-control">
+          <option value="">Todas las empresas</option>
+          {% for company in companies %}
+            <option
+              value="{{ company.id }}"
+              {% if selected_company_id == company.id %}selected{% endif %}
+            >
+              {{ company.name }} · {{ company.plan }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="mp-field">
+        <label for="months">Plazo</label>
+        <select name="months" id="months" class="mp-control">
+          <option value="3" {% if selected_months == 3 %}selected{% endif %}>Últimos 3 meses</option>
+          <option value="6" {% if selected_months == 6 %}selected{% endif %}>Últimos 6 meses</option>
+          <option value="12" {% if selected_months == 12 %}selected{% endif %}>Últimos 12 meses</option>
+          <option value="0" {% if selected_months == 0 %}selected{% endif %}>Todo el historial</option>
+        </select>
+      </div>
+
+      <button type="submit" class="mp-submit">
+        <i class="bi bi-stars"></i>
+        Generar análisis
+      </button>
+    </div>
+  </form>
+
+  <section class="mp-kpi-grid">
+    <article class="mp-kpi" style="--accent:#2563eb;">
+      <div class="mp-kpi-top">
+        <div class="mp-kpi-label">Ventas pagadas</div>
+        <div class="mp-kpi-icon"><i class="bi bi-receipt"></i></div>
+      </div>
+      <div class="mp-kpi-value">{{ analysis.summary.sales_count or 0 }}</div>
+      <div class="mp-kpi-note">Operaciones incluidas en el análisis</div>
+    </article>
+
+    <article class="mp-kpi" style="--accent:#0f766e;">
+      <div class="mp-kpi-top">
+        <div class="mp-kpi-label">Importe total</div>
+        <div class="mp-kpi-icon"><i class="bi bi-cash-stack"></i></div>
+      </div>
+      <div class="mp-kpi-value">${{ "{:,.2f}".format(analysis.summary.sales_total or 0) }}</div>
+      <div class="mp-kpi-note">Suma de ventas pagadas del periodo</div>
+    </article>
+
+    <article class="mp-kpi" style="--accent:#7c3aed;">
+      <div class="mp-kpi-top">
+        <div class="mp-kpi-label">Ticket promedio</div>
+        <div class="mp-kpi-icon"><i class="bi bi-calculator"></i></div>
+      </div>
+      <div class="mp-kpi-value">${{ "{:,.2f}".format(analysis.summary.average_ticket or 0) }}</div>
+      <div class="mp-kpi-note">Promedio monetario por venta pagada</div>
+    </article>
+  </section>
+
+  <div class="mp-period">
+    <i class="bi bi-calendar-range"></i>
+    <strong>Periodo aplicado:</strong>
+    {{ analysis.period_full_label }}
+  </div>
+
+  <section class="mp-export-panel">
+    <div class="mp-export-info">
+      <div class="mp-export-icon">
+        <i class="bi bi-download"></i>
+      </div>
+      <div>
+        <p class="mp-export-title">Exportar gráficas seleccionadas</p>
+        <p class="mp-export-subtitle">
+          Selecciona una o más gráficas y descárgalas en PDF o Excel.
+        </p>
+      </div>
+    </div>
+
+    <div class="mp-export-actions">
+      <span class="mp-selection-counter" id="selectedChartsCounter">0 seleccionadas</span>
+
+      <button type="button" class="mp-export-btn" id="selectAllChartsBtn">
+        <i class="bi bi-check2-square"></i>
+        Seleccionar todas
+      </button>
+
+      <button type="button" class="mp-export-btn mp-export-btn-pdf" id="downloadChartsPdfBtn" disabled>
+        <i class="bi bi-file-earmark-pdf-fill"></i>
+        Descargar PDF
+      </button>
+
+      <button type="button" class="mp-export-btn mp-export-btn-excel" id="downloadChartsExcelBtn" disabled>
+        <i class="bi bi-file-earmark-excel-fill"></i>
+        Descargar Excel
+      </button>
+    </div>
+  </section>
+
+  <section class="mp-chart-grid">
+
+    <article class="mp-chart-card mp-chart-card-wide mp-chart-card-monthly exportable-chart"
+      data-chart-key="monthly"
+      data-chart-title="Tendencia mensual de ventas"
+      data-axis-x="Mes y año de la venta"
+      data-axis-y="Importe de ventas pagadas en MXN">
+      <label class="mp-chart-select">
+        <input type="checkbox" class="chart-export-checkbox" value="monthly">
+        <span>Seleccionar</span>
+      </label>
+      <div class="mp-chart-head">
+        <div class="mp-chart-title-wrap">
+          <div class="mp-chart-icon">
+            <i class="bi bi-graph-up-arrow"></i>
+          </div>
+          <div>
+            <h2 class="mp-chart-title">Tendencia mensual de ventas</h2>
+            <p class="mp-chart-subtitle">
+              Evolución del importe de ventas pagadas durante el plazo seleccionado.
+            </p>
+          </div>
+        </div>
+        <span class="mp-chart-badge">Serie temporal</span>
+      </div>
+
+      <div class="mp-chart-body">
+        <div class="mp-chart-frame">
+          {% if analysis.monthly_chart %}
+            <img
+              class="mp-chart-image"
+              src="data:image/png;base64,{{ analysis.monthly_chart }}"
+              alt="Tendencia mensual de ventas generada con Matplotlib"
+            >
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mp-axis-guide">
+        <div class="mp-axis-pill">
+          <span class="mp-axis-dot"></span>
+          <span><strong>Eje X:</strong> mes y año de la venta.</span>
+        </div>
+        <div class="mp-axis-pill">
+          <span class="mp-axis-dot"></span>
+          <span><strong>Eje Y:</strong> importe de ventas pagadas en MXN.</span>
+        </div>
+      </div>
+
+      <div class="mp-chart-footer-note">
+        Cada punto representa el importe acumulado de ventas pagadas en ese mes.
+      </div>
+    </article>
+
+    <article class="mp-chart-card mp-chart-card-company exportable-chart"
+      data-chart-key="companies"
+      data-chart-title="Total de ventas por empresa"
+      data-axis-x="Total acumulado de ventas pagadas en MXN"
+      data-axis-y="Empresa analizada">
+      <label class="mp-chart-select">
+        <input type="checkbox" class="chart-export-checkbox" value="companies">
+        <span>Seleccionar</span>
+      </label>
+      <div class="mp-chart-head">
+        <div class="mp-chart-title-wrap">
+          <div class="mp-chart-icon">
+            <i class="bi bi-buildings"></i>
+          </div>
+          <div>
+            <h2 class="mp-chart-title">Total de ventas por empresa</h2>
+            <p class="mp-chart-subtitle">
+              Comparativo del importe acumulado de ventas pagadas por empresa.
+            </p>
+          </div>
+        </div>
+        <span class="mp-chart-badge">Comparativo</span>
+      </div>
+
+      <div class="mp-chart-body">
+        <div class="mp-chart-frame">
+          {% if analysis.companies_chart %}
+            <img
+              class="mp-chart-image"
+              src="data:image/png;base64,{{ analysis.companies_chart }}"
+              alt="Total de ventas por empresa"
+            >
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mp-axis-guide">
+        <div class="mp-axis-pill">
+          <span class="mp-axis-dot"></span>
+          <span><strong>Eje X:</strong> total acumulado de ventas pagadas en MXN.</span>
+        </div>
+        <div class="mp-axis-pill">
+          <span class="mp-axis-dot"></span>
+          <span><strong>Eje Y:</strong> empresa analizada.</span>
+        </div>
+      </div>
+
+      <div class="mp-chart-footer-note">
+        Las empresas se ordenan por el valor total vendido dentro del periodo aplicado.
+      </div>
+    </article>
+
+    <article class="mp-chart-card mp-chart-card-product exportable-chart"
+      data-chart-key="products"
+      data-chart-title="Productos más vendidos"
+      data-axis-x="Total de unidades vendidas"
+      data-axis-y="Producto vendido">
+      <label class="mp-chart-select">
+        <input type="checkbox" class="chart-export-checkbox" value="products">
+        <span>Seleccionar</span>
+      </label>
+      <div class="mp-chart-head">
+        <div class="mp-chart-title-wrap">
+          <div class="mp-chart-icon">
+            <i class="bi bi-box-seam"></i>
+          </div>
+          <div>
+            <h2 class="mp-chart-title">Productos más vendidos</h2>
+            <p class="mp-chart-subtitle">
+              Ranking por unidades vendidas con el importe generado por producto.
+            </p>
+          </div>
+        </div>
+        <span class="mp-chart-badge">Ranking</span>
+      </div>
+
+      <div class="mp-chart-body">
+        <div class="mp-chart-frame">
+          {% if analysis.products_chart %}
+            <img
+              class="mp-chart-image"
+              src="data:image/png;base64,{{ analysis.products_chart }}"
+              alt="Productos más vendidos"
+            >
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mp-axis-guide">
+        <div class="mp-axis-pill">
+          <span class="mp-axis-dot"></span>
+          <span><strong>Eje X:</strong> total de unidades vendidas.</span>
+        </div>
+        <div class="mp-axis-pill">
+          <span class="mp-axis-dot"></span>
+          <span><strong>Eje Y:</strong> producto vendido.</span>
+        </div>
+      </div>
+
+      <div class="mp-chart-footer-note">
+        El valor junto a cada barra conserva las unidades y el importe generado por producto.
+      </div>
+    </article>
+
+  </section>
+
+  <section class="mp-insights">
+    <h2 class="mp-insights-title">
+      <i class="bi bi-lightbulb-fill"></i>
+      Interpretación de resultados
+    </h2>
+
+    {% if analysis.interpretation %}
+      <ul class="mp-insights-list">
+        {% for item in analysis.interpretation %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="mp-period">
+        No hay información suficiente para generar una interpretación.
+      </div>
+    {% endif %}
+  </section>
+
+</div>
+
+<!-- Exportación local en navegador -->
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const checkboxes = Array.from(document.querySelectorAll(".chart-export-checkbox"));
+    const selectAllBtn = document.getElementById("selectAllChartsBtn");
+    const pdfBtn = document.getElementById("downloadChartsPdfBtn");
+    const excelBtn = document.getElementById("downloadChartsExcelBtn");
+    const counter = document.getElementById("selectedChartsCounter");
+
+    const reportPeriod = {{ analysis.period_full_label | tojson }};
+
+    function selectedCards() {
+      return checkboxes
+        .filter(cb => cb.checked)
+        .map(cb => cb.closest(".exportable-chart"))
+        .filter(Boolean);
+    }
+
+    function refreshSelectionUi() {
+      const selected = selectedCards();
+      const count = selected.length;
+
+      counter.textContent = `${count} seleccionada${count === 1 ? "" : "s"}`;
+      pdfBtn.disabled = count === 0;
+      excelBtn.disabled = count === 0;
+
+      checkboxes.forEach(cb => {
+        const card = cb.closest(".exportable-chart");
+        if (card) {
+          card.classList.toggle("is-selected", cb.checked);
+        }
+      });
+
+      const allSelected = checkboxes.length > 0 && checkboxes.every(cb => cb.checked);
+      selectAllBtn.innerHTML = allSelected
+        ? '<i class="bi bi-square"></i> Quitar selección'
+        : '<i class="bi bi-check2-square"></i> Seleccionar todas';
+    }
+
+    checkboxes.forEach(cb => cb.addEventListener("change", refreshSelectionUi));
+
+    selectAllBtn.addEventListener("click", function () {
+      const allSelected = checkboxes.length > 0 && checkboxes.every(cb => cb.checked);
+      checkboxes.forEach(cb => cb.checked = !allSelected);
+      refreshSelectionUi();
+    });
+
+    function getCardData(card) {
+      const img = card.querySelector(".mp-chart-image");
+
+      return {
+        title: card.dataset.chartTitle || "Gráfica",
+        axisX: card.dataset.axisX || "",
+        axisY: card.dataset.axisY || "",
+        image: img ? img.src : null
+      };
+    }
+
+    function safeFileDate() {
+      const now = new Date();
+      return [
+        now.getFullYear(),
+        String(now.getMonth() + 1).padStart(2, "0"),
+        String(now.getDate()).padStart(2, "0")
+      ].join("-");
+    }
+
+    function saveBlob(blob, fileName) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    // ------------------------------
+    // PDF
+    // ------------------------------
+    pdfBtn.addEventListener("click", async function () {
+      const cards = selectedCards();
+
+      if (!cards.length) return;
+
+      try {
+        pdfBtn.disabled = true;
+        pdfBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Generando PDF...';
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+          orientation: "landscape",
+          unit: "mm",
+          format: "a4"
+        });
+
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+
+        cards.forEach((card, index) => {
+          if (index > 0) pdf.addPage();
+
+          const data = getCardData(card);
+
+          pdf.setFillColor(23, 32, 51);
+          pdf.rect(0, 0, pageWidth, 24, "F");
+
+          pdf.setTextColor(255, 255, 255);
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(17);
+          pdf.text(data.title, 14, 15);
+
+          pdf.setTextColor(82, 96, 113);
+          pdf.setFont("helvetica", "normal");
+          pdf.setFontSize(9);
+          pdf.text(reportPeriod, 14, 32);
+
+          pdf.setFont("helvetica", "bold");
+          pdf.setTextColor(47, 93, 140);
+          pdf.text("Eje X:", 14, 39);
+          pdf.setFont("helvetica", "normal");
+          pdf.setTextColor(82, 96, 113);
+          pdf.text(data.axisX, 27, 39);
+
+          pdf.setFont("helvetica", "bold");
+          pdf.setTextColor(47, 93, 140);
+          pdf.text("Eje Y:", 14, 45);
+          pdf.setFont("helvetica", "normal");
+          pdf.setTextColor(82, 96, 113);
+          pdf.text(data.axisY, 27, 45);
+
+          if (data.image) {
+            const imgProps = pdf.getImageProperties(data.image);
+            const maxW = pageWidth - 28;
+            const maxH = pageHeight - 62;
+
+            let imgW = maxW;
+            let imgH = imgW * imgProps.height / imgProps.width;
+
+            if (imgH > maxH) {
+              imgH = maxH;
+              imgW = imgH * imgProps.width / imgProps.height;
+            }
+
+            const x = (pageWidth - imgW) / 2;
+            const y = 52;
+
+            pdf.addImage(data.image, "PNG", x, y, imgW, imgH);
+          }
+
+          pdf.setFontSize(8);
+          pdf.setTextColor(148, 163, 184);
+          pdf.text(
+            `STORE TRACK · Visualización generada con Python + Matplotlib · ${safeFileDate()}`,
+            14,
+            pageHeight - 7
+          );
+        });
+
+        pdf.save(`STORE_TRACK_Graficas_${safeFileDate()}.pdf`);
+      } catch (error) {
+        console.error(error);
+        alert("No fue posible generar el PDF. Revisa la consola del navegador.");
+      } finally {
+        pdfBtn.innerHTML = '<i class="bi bi-file-earmark-pdf-fill"></i> Descargar PDF';
+        refreshSelectionUi();
+      }
+    });
+
+    // ------------------------------
+    // EXCEL
+    // Cada gráfica se inserta como imagen en una hoja independiente.
+    // ------------------------------
+    excelBtn.addEventListener("click", async function () {
+      const cards = selectedCards();
+
+      if (!cards.length) return;
+
+      try {
+        excelBtn.disabled = true;
+        excelBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Generando Excel...';
+
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = "STORE TRACK";
+        workbook.created = new Date();
+
+        for (let index = 0; index < cards.length; index++) {
+          const data = getCardData(cards[index]);
+
+          let sheetName = data.title
+            .replace(/[\\\/\?\*\[\]\:]/g, "")
+            .substring(0, 31);
+
+          if (!sheetName) sheetName = `Grafica ${index + 1}`;
+
+          const worksheet = workbook.addWorksheet(sheetName);
+
+          worksheet.views = [{ showGridLines: false }];
+
+          worksheet.mergeCells("A1:L1");
+          worksheet.getCell("A1").value = data.title;
+          worksheet.getCell("A1").font = {
+            bold: true,
+            size: 18,
+            color: { argb: "FF172033" }
+          };
+          worksheet.getCell("A1").alignment = {
+            vertical: "middle",
+            horizontal: "left"
+          };
+          worksheet.getRow(1).height = 28;
+
+          worksheet.mergeCells("A2:L2");
+          worksheet.getCell("A2").value = reportPeriod;
+          worksheet.getCell("A2").font = {
+            size: 10,
+            color: { argb: "FF687386" }
+          };
+
+          worksheet.getCell("A4").value = "Eje X";
+          worksheet.getCell("B4").value = data.axisX;
+          worksheet.getCell("A5").value = "Eje Y";
+          worksheet.getCell("B5").value = data.axisY;
+
+          ["A4", "A5"].forEach(cell => {
+            worksheet.getCell(cell).font = {
+              bold: true,
+              color: { argb: "FF2F5D8C" }
+            };
+          });
+
+          worksheet.getColumn("A").width = 14;
+          worksheet.getColumn("B").width = 42;
+          for (let c = 3; c <= 12; c++) {
+            worksheet.getColumn(c).width = 12;
+          }
+
+          if (data.image) {
+            const base64 = data.image.split(",")[1];
+
+            const imageId = workbook.addImage({
+              base64: base64,
+              extension: "png"
+            });
+
+            worksheet.addImage(imageId, {
+              tl: { col: 0, row: 6 },
+              ext: { width: 980, height: 520 }
+            });
+
+            for (let r = 7; r <= 34; r++) {
+              worksheet.getRow(r).height = 18;
+            }
+          }
+
+          worksheet.mergeCells("A36:L36");
+          worksheet.getCell("A36").value =
+            "STORE TRACK · Visualización generada con Python + Matplotlib";
+          worksheet.getCell("A36").font = {
+            italic: true,
+            size: 9,
+            color: { argb: "FF94A3B8" }
+          };
+        }
+
+        const buffer = await workbook.xlsx.writeBuffer();
+
+        saveBlob(
+          new Blob(
+            [buffer],
+            {
+              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            }
+          ),
+          `STORE_TRACK_Graficas_${safeFileDate()}.xlsx`
+        );
+      } catch (error) {
+        console.error(error);
+        alert("No fue posible generar el Excel. Revisa la consola del navegador.");
+      } finally {
+        excelBtn.innerHTML = '<i class="bi bi-file-earmark-excel-fill"></i> Descargar Excel';
+        refreshSelectionUi();
+      }
+    });
+
+    refreshSelectionUi();
+  });
+</script>
+
+{% endblock %}

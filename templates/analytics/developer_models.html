@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Modelos predictivos{% endblock %}
+
+{% block extra_css %}
+<style>
+  .models-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .model-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: .5rem;
+    min-width: 230px;
+  }
+
+  .model-actions .btn {
+    white-space: nowrap;
+  }
+
+  .status-reason {
+    max-width: 280px;
+  }
+
+  .company-name {
+    font-weight: 800;
+    color: #1f2937;
+  }
+
+  .table-card {
+    border: 0;
+    border-radius: 14px;
+    box-shadow: var(--panel-shadow);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <div class="models-header">
+    <div>
+      <h2 class="fw-bold mb-1">Análisis por empresa</h2>
+      <p class="text-muted mb-0">
+        Consulta de forma independiente el Random Forest y la segmentación
+        K-Means de cada empresa.
+      </p>
+    </div>
+
+   
+  </div>
+
+  <div class="card table-card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Empresa</th>
+              <th>Ventas</th>
+              <th>Con cliente</th>
+              <th>Rápidas</th>
+              <th>Ejemplos ML</th>
+              <th>Estado Random Forest</th>
+              <th>Exactitud</th>
+              <th class="text-end">Análisis</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for company in companies %}
+              <tr>
+                <td>
+                  <div class="company-name">
+                    {{ company.name }}
+                  </div>
+                  <div class="small text-muted">
+                    Plan: {{ company.plan }}
+                  </div>
+                </td>
+
+                <td>{{ company.summary.total_sales }}</td>
+                <td>{{ company.summary.identified_sales }}</td>
+                <td>{{ company.summary.quick_sales }}</td>
+
+                <td>
+                  <div class="fw-semibold">
+                    {{ company.summary.training_rows }}
+                  </div>
+                  <div class="small text-muted">
+                    Sí: {{ company.summary.positive_rows }}
+                    /
+                    No: {{ company.summary.negative_rows }}
+                  </div>
+                </td>
+
+                <td>
+                  <span class="badge text-bg-{{ company.status.badge }}">
+                    {{ company.status.label }}
+                  </span>
+
+                  <div class="small text-muted mt-1 status-reason">
+                    {{ company.status.reason }}
+                  </div>
+                </td>
+
+                <td>
+                  {% if company.model and company.model.metrics %}
+                    {{ (company.model.metrics.accuracy * 100)|round(2) }}%
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+
+                <td class="text-end">
+                  <div class="model-actions">
+                    <a
+                      class="btn btn-sm btn-primary"
+                      href="{{ url_for(
+                        'analytics.developer_company_model',
+                        company_id=company.id
+                      ) }}"
+                    >
+                      <i class="bi bi-tree-fill me-1"></i>
+                      Random Forest
+                    </a>
+
+                    <a
+                      class="btn btn-sm btn-dark"
+                      href="{{ url_for(
+                        'analytics.developer_company_kmeans',
+                        company_id=company.id
+                      ) }}"
+                    >
+                      <i class="bi bi-diagram-3-fill me-1"></i>
+                      K-Means
+                    </a>
+                  </div>
+                </td>
+              </tr>
+
+            {% else %}
+              <tr>
+                <td
+                  colspan="8"
+                  class="text-center text-muted py-4"
+                >
+                  No existen empresas registradas.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

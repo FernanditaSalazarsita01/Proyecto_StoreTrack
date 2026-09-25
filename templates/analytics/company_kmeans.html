@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+
+{% block title %}K-Means | {{ company.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .analysis-card {
+    border: 0;
+    border-radius: 16px;
+    box-shadow: var(--panel-shadow);
+  }
+
+  .metric-value {
+    font-size: 2rem;
+    font-weight: 900;
+    line-height: 1;
+    margin-top: .45rem;
+  }
+
+  .chart-wrapper {
+    position: relative;
+    height: 430px;
+  }
+
+  .method-step {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .method-step:last-child {
+    border-bottom: 0;
+  }
+
+  .step-number {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e0e7ff;
+    color: #3730a3;
+    font-weight: 900;
+  }
+
+  .result-box {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 15px;
+  }
+
+  .segment-badge {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #e0e7ff;
+    color: #3730a3;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .centroid-table th {
+    white-space: nowrap;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">Segmentación K-Means</h2>
+      <p class="text-muted mb-0">
+        Método del codo mediante WCSS y agrupación de clientes de {{ company.name }}.
+      </p>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      {% if developer_view %}
+        <a
+          href="{{ url_for('analytics.developer_company_model', company_id=company.id) }}"
+          class="btn btn-primary"
+        >
+          <i class="bi bi-tree-fill me-1"></i>
+          Random Forest
+        </a>
+
+        <a
+          href="{{ url_for('analytics.developer_models') }}"
+          class="btn btn-outline-secondary"
+        >
+          Volver
+        </a>
+      {% else %}
+        <a
+          href="{{ url_for('analytics.company_random_forest') }}"
+          class="btn btn-primary"
+        >
+          <i class="bi bi-tree-fill me-1"></i>
+          Random Forest
+        </a>
+
+        <a
+          href="{{ url_for('data_quality.index') }}"
+          class="btn btn-outline-secondary"
+        >
+          Volver
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if cluster_analysis.available %}
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="card analysis-card h-100">
+          <div class="card-body">
+            <div class="text-muted small">Clientes analizados</div>
+            <div class="metric-value">{{ cluster_analysis.customer_count }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card analysis-card h-100">
+          <div class="card-body">
+            <div class="text-muted small">K sugerido</div>
+            <div class="metric-value">{{ cluster_analysis.suggested_k }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card analysis-card h-100">
+          <div class="card-body">
+            <div class="text-muted small">K aplicado</div>
+            <div class="metric-value">{{ cluster_analysis.selected_k }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card analysis-card h-100">
+          <div class="card-body">
+            <div class="text-muted small">WCSS final</div>
+            <div class="metric-value">{{ cluster_analysis.wcss }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card analysis-card mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-3">
+          <div>
+            <h4 class="fw-bold mb-1">Método del codo con WCSS</h4>
+            <p class="text-muted mb-0">
+              WCSS mide la suma de las distancias cuadradas entre cada cliente
+              y el centroide de su clúster.
+            </p>
+          </div>
+
+          <form method="GET" class="d-flex align-items-end gap-2">
+            <div>
+              <label for="cluster_k" class="form-label fw-semibold">
+                Número de clústeres
+              </label>
+              <select id="cluster_k" name="cluster_k" class="form-select">
+                {% for k in cluster_analysis.allowed_k_values %}
+                  <option
+                    value="{{ k }}"
+                    {% if k == cluster_analysis.selected_k %}selected{% endif %}
+                  >
+                    {{ k }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-dark">Aplicar</button>
+          </form>
+        </div>
+
+        <div class="chart-wrapper">
+          <canvas id="elbowChart"></canvas>
+        </div>
+
+        <div class="result-box mt-3">
+          <strong>Resultado:</strong>
+          el sistema recomienda <strong>K = {{ cluster_analysis.suggested_k }}</strong>
+          porque ahí se observa el cambio más importante en la pendiente de WCSS.
+          Actualmente se aplicó <strong>K = {{ cluster_analysis.selected_k }}</strong>
+          con un WCSS de <strong>{{ cluster_analysis.wcss }}</strong>.
+        </div>
+      </div>
+    </div>
+
+   
+
+    <div class="card analysis-card mb-4">
+      <div class="card-body">
+        <h4 class="fw-bold mb-3">Valores WCSS evaluados</h4>
+
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>K</th>
+                <th>WCSS</th>
+                <th>Reducción</th>
+                <th>Reducción porcentual</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in cluster_analysis.elbow_data %}
+                <tr>
+                  <td>
+                    <strong>{{ item.k }}</strong>
+                    {% if item.k == cluster_analysis.suggested_k %}
+                      <span class="badge text-bg-success ms-1">Sugerido</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ item.wcss }}</td>
+                  <td>
+                    {% if item.k == 1 %}—{% else %}{{ item.reduction }}{% endif %}
+                  </td>
+                  <td>
+                    {% if item.k == 1 %}
+                      —
+                    {% else %}
+                      {{ item.reduction_percentage }}%
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card analysis-card mb-4">
+      <div class="card-body">
+        <h4 class="fw-bold mb-2">Centroides de los clústeres</h4>
+        <p class="text-muted">
+          Cada centroide representa el cliente promedio de su segmento,
+          expresado nuevamente en las unidades originales.
+        </p>
+
+        <div class="table-responsive">
+          <table class="table align-middle centroid-table">
+            <thead>
+              <tr>
+                <th>Segmento</th>
+                <th>Compras</th>
+                <th>Total comprado</th>
+                <th>Ticket promedio</th>
+                <th>Días desde última</th>
+                <th>Productos distintos</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for centroid in cluster_analysis.centroids %}
+                <tr>
+                  <td>
+                    <span class="segment-badge">
+                      {{ centroid.segment_name }}
+                    </span>
+                  </td>
+                  <td>{{ centroid.purchase_count|round(2) }}</td>
+                  <td>${{ "{:,.2f}".format(centroid.total_spent) }}</td>
+                  <td>${{ "{:,.2f}".format(centroid.avg_purchase) }}</td>
+                  <td>{{ centroid.days_since_last_purchase|round(2) }}</td>
+                  <td>{{ centroid.unique_products|round(2) }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card analysis-card mb-4">
+      <div class="card-body">
+        <h4 class="fw-bold mb-3">Resumen de segmentos</h4>
+
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Segmento</th>
+                <th>Clientes</th>
+                <th>Compras promedio</th>
+                <th>Gasto promedio</th>
+                <th>Ticket promedio</th>
+                <th>Distancia promedio</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cluster in cluster_analysis.cluster_summary %}
+                <tr>
+                  <td>
+                    <span class="segment-badge">
+                      {{ cluster.segment_name }}
+                    </span>
+                  </td>
+                  <td>{{ cluster.customer_count }}</td>
+                  <td>{{ cluster.purchase_count|round(2) }}</td>
+                  <td>${{ "{:,.2f}".format(cluster.total_spent) }}</td>
+                  <td>${{ "{:,.2f}".format(cluster.average_ticket) }}</td>
+                  <td>{{ cluster.average_distance|round(4) }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card analysis-card">
+      <div class="card-body">
+        <h4 class="fw-bold mb-3">Clientes segmentados</h4>
+
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Segmento</th>
+                <th>Compras</th>
+                <th>Total comprado</th>
+                <th>Ticket promedio</th>
+                <th>Distancia al centroide</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for client in cluster_analysis.customers %}
+                <tr>
+                  <td class="fw-semibold">{{ client.client_name }}</td>
+                  <td>
+                    <span class="segment-badge">
+                      {{ client.segment_name }}
+                    </span>
+                  </td>
+                  <td>{{ client.purchase_count }}</td>
+                  <td>${{ "{:,.2f}".format(client.total_spent) }}</td>
+                  <td>${{ "{:,.2f}".format(client.average_ticket) }}</td>
+                  <td>{{ client.distance_to_centroid }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      const elbowData = {{ cluster_analysis.elbow_data | tojson }};
+      const suggestedK = {{ cluster_analysis.suggested_k }};
+      const selectedK = {{ cluster_analysis.selected_k }};
+
+      const pointBackgroundColors = elbowData.map(item => {
+        if (item.k === suggestedK) return "#16a34a";
+        if (item.k === selectedK) return "#2563eb";
+        return "#64748b";
+      });
+
+      const pointRadii = elbowData.map(item => {
+        if (item.k === suggestedK || item.k === selectedK) return 8;
+        return 5;
+      });
+
+      new Chart(document.getElementById("elbowChart"), {
+        type: "line",
+        data: {
+          labels: elbowData.map(item => `K = ${item.k}`),
+          datasets: [{
+            label: "WCSS",
+            data: elbowData.map(item => item.wcss),
+            borderWidth: 3,
+            borderColor: "#334155",
+            backgroundColor: "rgba(51, 65, 85, 0.10)",
+            fill: true,
+            tension: 0.28,
+            pointBackgroundColor: pointBackgroundColors,
+            pointBorderColor: pointBackgroundColors,
+            pointRadius: pointRadii,
+            pointHoverRadius: 10
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false,
+            mode: "index"
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: "top"
+            },
+            tooltip: {
+              callbacks: {
+                afterLabel: function(context) {
+                  const item = elbowData[context.dataIndex];
+
+                  if (item.k === 1) {
+                    return "Punto inicial";
+                  }
+
+                  return [
+                    `Reducción: ${item.reduction}`,
+                    `Reducción porcentual: ${item.reduction_percentage}%`,
+                    item.k === suggestedK ? "K sugerido por el sistema" : ""
+                  ].filter(Boolean);
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: "Número de clústeres"
+              },
+              grid: {
+                display: false
+              }
+            },
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: "WCSS"
+              }
+            }
+          }
+        }
+      });
+    </script>
+
+  {% else %}
+    <div class="alert alert-warning">
+      <h5 class="fw-bold">Análisis K-Means no disponible</h5>
+      <p class="mb-0">
+        {{ cluster_analysis.reason or cluster_analysis.message }}
+      </p>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
