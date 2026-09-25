@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Developer | Store Track{% endblock %}
+
+{% block content %}
+
+<div class="page-card">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">Panel Developer</h2>
+      <p class="text-muted mb-0">
+        Empresas registradas en la plataforma.
+      </p>
+    </div>
+
+    <a href="/register-company" class="btn btn-primary btn-sm">
+      <i class="bi bi-building-add me-1"></i>
+      Registrar empresa
+    </a>
+  </div>
+
+  <div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">Empresas</h6>
+          <h2 class="fw-bold mb-0">{{ total_companies }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">Activas</h6>
+          <h2 class="fw-bold mb-0">{{ active_companies }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">Inactivas</h6>
+          <h2 class="fw-bold mb-0">{{ inactive_companies }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted mb-1">Usuarios</h6>
+          <h2 class="fw-bold mb-0">{{ total_users }}</h2>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+
+      <thead>
+        <tr>
+          <th>Empresa</th>
+          <th>Administrador</th>
+          <th>Correo administrador</th>
+          <th>Usuarios</th>
+          <th>Color</th>
+          <th>Fecha</th>
+          <th>Estatus</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        {% for company in companies %}
+        <tr>
+
+          <td>
+            <strong>{{ company.name }}</strong>
+            <br>
+            <small class="text-muted">{{ company.id }}</small>
+          </td>
+
+          <td>
+            {% if company.admin %}
+              {{ company.admin.name }}
+            {% else %}
+              <span class="text-muted">Sin administrador</span>
+            {% endif %}
+          </td>
+
+          <td>
+            {% if company.admin %}
+              {{ company.admin.email }}
+            {% else %}
+              <span class="text-muted">No disponible</span>
+            {% endif %}
+          </td>
+
+          <td>
+            <span class="badge bg-dark">
+              {{ company.total_users }}
+            </span>
+          </td>
+
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <span style="
+                width:22px;
+                height:22px;
+                border-radius:50%;
+                background:{{ company.theme_color if company.theme_color else '#8fd8b7' }};
+                display:inline-block;
+                border:1px solid #ddd;">
+              </span>
+
+              <span>
+                {{ company.theme_color if company.theme_color else "#8fd8b7" }}
+              </span>
+            </div>
+          </td>
+
+          <td>
+            {% if company.display_date %}
+              {{ company.display_date.strftime("%d/%m/%Y") }}
+            {% else %}
+              No disponible
+            {% endif %}
+          </td>
+
+          <td>
+            {% if company.active %}
+              <span class="badge bg-success">Activa</span>
+            {% else %}
+              <span class="badge bg-secondary">Inactiva</span>
+            {% endif %}
+          </td>
+
+          <td>
+            <a href="/developer/company/{{ company.id }}" class="btn btn-sm btn-primary">
+              <i class="bi bi-eye me-1"></i>
+              Ver detalle
+            </a>
+          </td>
+
+        </tr>
+
+        {% else %}
+
+        <tr>
+          <td colspan="8" class="text-center text-muted py-4">
+            No hay empresas registradas.
+          </td>
+        </tr>
+
+        {% endfor %}
+
+      </tbody>
+
+    </table>
+  </div>
+
+</div>
+
+{% endblock %}
