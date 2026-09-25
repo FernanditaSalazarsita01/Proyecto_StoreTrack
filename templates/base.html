@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Store Track{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --brand: {{ session.theme_color if session.theme_color else "#8fd8b7" }};
+      --brand-dark: color-mix(in srgb, var(--brand) 82%, #000 18%);
+      --brand-soft: color-mix(in srgb, var(--brand) 20%, #ffffff 80%);
+      --brand-soft-strong: color-mix(in srgb, var(--brand) 35%, #ffffff 65%);
+
+      --page-bg:#eef2f3;
+      --sidebar-bg:#f7f5f5;
+      --sidebar-border:#e3ece9;
+      --sidebar-text:#29473b;
+      --sidebar-hover:var(--brand-soft);
+      --sidebar-active:var(--brand);
+      --sidebar-active-text:#ffffff;
+      --card-bg:#ffffff;
+      --border:#e4ebea;
+      --text:#23313a;
+      --muted:#667781;
+      --shadow:0 6px 18px rgba(0,0,0,.08);
+      --panel-shadow:0 10px 30px rgba(0,0,0,.10);
+      --topbar-grad:linear-gradient(135deg,var(--brand) 0%,var(--brand-soft-strong) 100%);
+      --header-height:78px;
+    }
+
+    html[data-theme="dark"]{
+      --brand-soft: color-mix(in srgb, var(--brand) 35%, #1f2937 65%);
+      --brand-soft-strong: color-mix(in srgb, var(--brand) 45%, #334155 55%);
+
+      --page-bg:#818185;
+      --sidebar-bg:#3d3d3d;
+      --sidebar-border:#f3fbfb;
+      --sidebar-text:#ffffff;
+      --sidebar-hover:var(--brand-soft);
+      --sidebar-active:var(--brand);
+      --sidebar-active-text:#ffffff;
+      --card-bg:#dfe5ea;
+      --border:#383f44;
+      --text:#000000;
+      --muted:#000000;
+      --topbar-grad:linear-gradient(135deg,var(--brand-dark) 0%,var(--brand-soft-strong) 100%);
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:var(--page-bg);
+      color:var(--text);
+      transition:.25s;
+    }
+
+    .app{
+      min-height:100vh;
+      display:flex;
+    }
+
+    .sidebar{
+      width:290px;
+      min-width:290px;
+      height:100vh;
+      position:sticky;
+      top:0;
+      background:var(--sidebar-bg);
+      border-right:1px solid var(--sidebar-border);
+      box-shadow:var(--panel-shadow);
+      overflow:hidden;
+    }
+
+    .brand{
+      height:var(--header-height);
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:0 22px;
+      background:var(--brand);
+      color:#fff;
+      font-size:24px;
+      font-weight:800;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .brand-logo{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      background:rgba(255,255,255,.25);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .company{
+      padding:12px 22px;
+      font-size:13px;
+      font-weight:700;
+      color:var(--sidebar-text);
+      border-bottom:1px solid var(--sidebar-border);
+    }
+
+    .side-nav{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      padding:12px 10px;
+    }
+
+    .navlink{
+      min-height:42px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 12px;
+      font-size:13px;
+      border-radius:12px;
+      text-decoration:none;
+      font-weight:700;
+      color:var(--sidebar-text)!important;
+      transition:.18s;
+    }
+
+    .navlink:hover{
+      background:var(--sidebar-hover);
+      transform:translateX(2px);
+      color:var(--sidebar-text)!important;
+    }
+
+    .navlink.active{
+      background:var(--sidebar-active);
+      color:var(--sidebar-active-text)!important;
+      box-shadow:0 8px 18px color-mix(in srgb, var(--brand) 28%, transparent);
+    }
+
+    .content{
+      flex:1;
+      min-width:0;
+    }
+
+    .topbar{
+      height:var(--header-height);
+      background:var(--topbar-grad);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 22px;
+      position:sticky;
+      top:0;
+      z-index:30;
+      box-shadow:var(--shadow);
+    }
+
+    .topbar-title{
+      color:#fff;
+      font-size:20px;
+      font-weight:800;
+      margin:0;
+    }
+
+    .date{
+      color:rgba(255,255,255,.95);
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .topbar-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .topbar-btn{
+      width:46px;
+      height:46px;
+      border:1px solid rgba(255,255,255,.45);
+      background:rgba(255,255,255,.42);
+      color:#1f4d40;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+      text-decoration:none;
+      cursor:pointer;
+      box-shadow:0 6px 14px rgba(0,0,0,.10);
+      transition:.18s;
+    }
+
+    .topbar-btn:hover{
+      background:rgba(255,255,255,.60);
+      transform:translateY(-1px);
+    }
+
+    .logout-btn{
+      color:#8a1f2d;
+    }
+
+    .main-wrapper{
+      padding:22px;
+    }
+
+    .page-card{
+      background:var(--card-bg);
+      border:1px solid var(--border);
+      border-radius:22px;
+      padding:26px;
+      box-shadow:var(--shadow);
+    }
+
+    .modal-content,
+    .offcanvas{
+      background:var(--card-bg);
+      color:var(--text);
+      border:none;
+      border-radius:18px;
+      overflow:hidden;
+    }
+
+    .modal-header,
+    .offcanvas-header,
+    .tools-header{
+      background:linear-gradient(135deg,var(--brand),var(--brand-dark));
+      color:#fff;
+    }
+
+    .perfil-avatar{
+      width:84px;
+      height:84px;
+      border-radius:50%;
+      background:linear-gradient(135deg,var(--brand),var(--brand-dark));
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:30px;
+      font-weight:800;
+      margin:auto;
+    }
+
+    .perfil-dato{
+      background:var(--card-bg);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:13px;
+      margin-bottom:12px;
+    }
+
+    .perfil-dato strong{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .tools-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.35);
+      opacity:0;
+      visibility:hidden;
+      z-index:1040;
+      transition:.25s;
+    }
+
+    .tools-overlay.show{
+      opacity:1;
+      visibility:visible;
+    }
+
+    .tools-panel{
+      position:fixed;
+      top:0;
+      right:-360px;
+      width:340px;
+      max-width:90vw;
+      height:100vh;
+      background:var(--card-bg);
+      z-index:1050;
+      transition:.28s;
+      box-shadow:-10px 0 30px rgba(0,0,0,.20);
+    }
+
+    .tools-panel.show{
+      right:0;
+    }
+
+    .tools-header{
+      padding:18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .tools-body{
+      padding:18px;
+      background:var(--page-bg);
+      height:calc(100vh - 67px);
+    }
+
+    .tools-section{
+      background:var(--card-bg);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:16px;
+    }
+
+    .theme-option{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      border:1px solid var(--border);
+      background:var(--card-bg);
+      border-radius:14px;
+      padding:12px 14px;
+      margin-bottom:10px;
+      cursor:pointer;
+    }
+
+    .theme-option:hover{
+      background:var(--brand-soft);
+    }
+
+    .theme-option.active{
+      border-color:var(--brand);
+      box-shadow:0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent);
+    }
+
+    .tools-close{
+      background:none;
+      border:none;
+      color:#fff;
+      font-size:24px;
+    }
+
+    .upgrade-modal{
+  border-radius:24px;
+  overflow:hidden;
+}
+
+.upgrade-icon{
+  width:72px;
+  height:72px;
+  border-radius:50%;
+  background:#eef2ff;
+  color:#2563eb;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin:auto;
+  font-size:30px;
+}
+
+.plan-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin-top:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.25);
+  color:#fff;
+  font-size:12px;
+  font-weight:800;
+}
+
+.navlink.locked{
+  opacity:.68;
+}
+
+
+    .developer-side-title{
+      margin:10px 10px 4px;
+      padding:8px 12px 4px;
+      color:var(--muted);
+      font-size:11px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .developer-nav-note{
+      margin:8px 10px 0;
+      padding:12px;
+      border-radius:14px;
+      background:var(--brand-soft);
+      border:1px solid var(--border);
+      color:var(--sidebar-text);
+      font-size:12px;
+      line-height:1.45;
+      font-weight:700;
+    }
+
+    .developer-nav-note small{
+      display:block;
+      margin-top:4px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    @media(max-width:992px){
+      .app{
+        display:block;
+      }
+
+      .sidebar{
+        display:none;
+      }
+
+      .topbar{
+        height:auto;
+        min-height:72px;
+      }
+
+      .main-wrapper{
+        padding:14px;
+      }
+      .upgrade-modal{
+  border-radius:24px;
+  overflow:hidden;
+}
+
+.upgrade-icon{
+  width:72px;
+  height:72px;
+  border-radius:50%;
+  background:#eef2ff;
+  color:#2563eb;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin:auto;
+  font-size:30px;
+}
+    }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+
+    <div class="brand">
+      <div class="brand-logo">
+        <i class="bi bi-box-seam"></i>
+      </div>
+      <span>STORE TRACK</span>
+    </div>
+
+    
+
+    <nav class="side-nav">
+
+      {% if session.role == "developer" %}
+
+        <div class="developer-side-title">Vista general</div>
+
+        <a class="navlink {% if request.path == '/developer/home' %}active{% endif %}" href="/developer/home">
+          <i class="bi bi-speedometer2"></i>
+          <span>Dashboard</span>
+        </a>
+        <a class="navlink {% if request.path == '/developer/companies' %}active{% endif %}" href="/developer/companies">
+  <i class="bi bi-buildings"></i>
+  <span>Todas las empresas</span>
+</a>
+
+        <a class="navlink" href="/developer/home#planes">
+          <i class="bi bi-gem"></i>
+          <span>Planes y suscripciones</span>
+        </a>
+
+        <a class="navlink" href="/developer/home#ventas">
+          <i class="bi bi-graph-up-arrow"></i>
+          <span>Ventas por empresa</span>
+        </a>
+
+        <a class="navlink" href="/developer/home#empresas">
+          <i class="bi bi-buildings"></i>
+          <span>Empresas recientes</span>
+        </a>
+
+        <div class="developer-side-title">Administración</div>
+
+        <a class="navlink {% if request.path == '/register-company' %}active{% endif %}" href="/register-company">
+          <i class="bi bi-building-add"></i>
+          <span>Registrar empresa</span>
+        </a>
+        <a href="{{ url_for('analytics.developer_models') }}"
+   class="sidebar-link">
+    <i class="bi bi-diagram-3"></i>
+    Modelos predictivos
+</a>
+        <div class="developer-nav-note">
+          <i class="bi bi-info-circle me-1"></i>
+          Desde el inicio puedes revisar usuarios, suscripciones, ingresos estimados, planes y ventas globales.
+          <small>Todo se muestra en /developer/home.</small>
+        </div>
+
+      {% else %}
+
+        {% if session.role == "admin_empresa" %}
+        
+
+       <a class="navlink {% if request.path.startswith('/admin/data-quality') %}active{% endif %} {% if not has_plan_feature('data_quality') %}locked{% endif %}"
+   href="/admin/data-quality/">
+  <i class="bi {% if has_plan_feature('data_quality') %}bi-shield-check{% else %}bi-lock{% endif %}"></i>
+  <span>Calidad de Datos</span>
+</a>
+        {% endif %}
+
+        <a class="navlink {% if request.path == '/productos/add' %}active{% endif %}" href="/productos/add">
+          <i class="bi bi-plus-square"></i>
+          <span>Añadir productos</span>
+        </a>
+
+        <a class="navlink {% if request.path == '/productos' %}active{% endif %}" href="/productos">
+          <i class="bi bi-box-seam"></i>
+          <span>Productos</span>
+        </a>
+
+        <a class="navlink {% if request.path == '/nueva-venta' %}active{% endif %} {% if not has_plan_feature('sales') %}locked{% endif %}" href="/nueva-venta">
+  <i class="bi {% if has_plan_feature('sales') %}bi-cart-plus{% else %}bi-lock{% endif %}"></i>
+  <span>Nueva Venta</span>
+</a>
+
+       
+        <a class="navlink {% if request.path == '/ventas' %}active{% endif %}" href="/ventas">
+  <i class="bi bi-receipt"></i>
+  <span>Ventas</span>
+</a>
+
+<a class="navlink {% if request.path == '/credito' %}active{% endif %} {% if not has_plan_feature('credit_sales') %}locked{% endif %}"
+   href="/credito">
+  <i class="bi {% if has_plan_feature('credit_sales') %}bi-hourglass-split{% else %}bi-lock{% endif %}"></i>
+  <span>Crédito</span>
+</a>
+        <a class="navlink {% if request.path.startswith('/clientes') %}active{% endif %}" href="/clientes">
+  <i class="bi bi-people"></i>
+  <span>Clientes</span>
+</a>
+<a class="navlink {% if request.path.startswith('/inteligencia-negocio') %}active{% endif %}" href="{{ url_for('business_intelligence.index') }}">
+  <i class="bi bi-stars"></i>
+  <span>Inteligencia de negocio</span>
+</a>
+<a class="navlink {% if request.path == '/admin/home' %}active{% endif %}" href="/admin/home">
+<i class="bi bi-person-lines-fill"></i>
+          <span>Usuarios</span>
+        </a>
+        {% if session.role == "admin_empresa" %}
+        <a class="navlink {% if request.path == '/admin/personalizacion' %}active{% endif %}" href="/admin/personalizacion">
+          <i class="bi bi-palette"></i>
+          <span>Personalización</span>
+        </a>
+<a class="navlink {% if request.path == '/empresa/pdf-branding' %}active{% endif %} {% if not has_plan_feature('pdf_branding') %}locked{% endif %}" href="/empresa/pdf-branding">
+  <i class="bi {% if has_plan_feature('pdf_branding') %}bi-file-earmark-richtext{% else %}bi-lock{% endif %}"></i>
+  <span>Personalización PDF</span>
+</a>
+        <a class="navlink {% if request.path == '/backups' %}active{% endif %}" href="/backups">
+          <i class="bi bi-database"></i>
+          <span>Backups</span>
+        </a>
+
+        
+
+        <a class="navlink {% if request.path == '/empresa/planes' %}active{% endif %}" href="/empresa/planes">
+  <i class="bi bi-gem"></i>
+  <span>Planes</span>
+</a>
+        {% endif %}
+
+      {% endif %}
+
+    </nav>
+
+  </aside>
+
+  <main class="content">
+
+    <div class="topbar">
+
+      <div>
+        <h1 class="topbar-title">
+          {% if session.role == "developer" %}
+            Dashboard Developer
+          {% else %}
+            Store Track
+          {% endif %}
+        </h1>
+
+        <div class="date">
+          {% if session.role == "developer" %}
+            Empresas, suscripciones, planes, usuarios e ingresos estimados
+          {% else %}
+            {{ session.company_name if session.company_name else "Panel principal" }}
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+
+        <button class="topbar-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#perfilPanel" title="Mi perfil">
+          <i class="bi bi-person-circle"></i>
+        </button>
+
+        <button class="topbar-btn" type="button" id="openToolsBtn" title="Cambiar apariencia">
+          <i class="bi bi-tools"></i>
+        </button>
+
+        <button class="topbar-btn logout-btn" type="button" data-bs-toggle="modal" data-bs-target="#logoutModal" title="Cerrar sesión">
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="main-wrapper">
+      {% block content %}{% endblock %}
+    </div>
+
+  </main>
+
+</div>
+
+<div class="modal fade" id="logoutModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        ¿Deseas cerrar sesión?
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+
+        <a href="/logout" class="btn btn-danger btn-sm">
+          Sí, cerrar sesión
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="perfilPanel">
+
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title fw-bold">
+      <i class="bi bi-person-circle me-2"></i>Mi Perfil
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+  </div>
+
+  <div class="offcanvas-body">
+
+    <div class="text-center mb-4">
+      <div class="perfil-avatar">
+        {{ (session.user_name[:1] if session.user_name else "U")|upper }}
+      </div>
+
+      <h5 class="mt-3 fw-bold">
+        {{ session.user_name if session.user_name else "Usuario" }}
+      </h5>
+
+      <p class="text-muted">
+        {{ session.role if session.role else "Sin rol" }}
+      </p>
+    </div>
+
+    <div class="perfil-dato">
+      <strong>Nombre</strong>
+      <span>{{ session.user_name if session.user_name else "Sin nombre" }}</span>
+    </div>
+
+    <div class="perfil-dato">
+      <strong>Correo</strong>
+      <span>{{ session.email if session.email else "Sin correo" }}</span>
+    </div>
+
+    <div class="perfil-dato">
+      <strong>Empresa</strong>
+      <span>
+        {% if session.role == "developer" %}
+          Developer
+        {% else %}
+          {{ session.company_name if session.company_name else "Sin empresa" }}
+        {% endif %}
+      </span>
+    </div>
+
+    <div class="perfil-dato">
+      <strong>Rol</strong>
+      <span>{{ session.role if session.role else "Sin rol" }}</span>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="tools-overlay" id="toolsOverlay"></div>
+
+<div class="tools-panel" id="toolsPanel">
+
+  <div class="tools-header">
+    <h5 class="m-0 fw-bold">
+      <i class="bi bi-sliders me-2"></i>Herramientas
+    </h5>
+    <button class="tools-close" id="closeToolsBtn" type="button">&times;</button>
+  </div>
+
+  <div class="tools-body">
+
+    <div class="tools-section">
+      <h6 class="fw-bold">Apariencia</h6>
+      <p class="small text-muted">Selecciona el modo visual del sistema.</p>
+
+      <div class="theme-option" data-theme-option="light">
+        <div>
+          <strong><i class="bi bi-sun me-2"></i>Modo claro</strong><br>
+          <span class="small">Diseño limpio e iluminado</span>
+        </div>
+        <i class="bi bi-check-circle-fill"></i>
+      </div>
+
+      <div class="theme-option" data-theme-option="dark">
+        <div>
+          <strong><i class="bi bi-moon-stars me-2"></i>Modo oscuro</strong><br>
+          <span class="small">Diseño oscuro y elegante</span>
+        </div>
+        <i class="bi bi-check-circle-fill"></i>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, msg in messages %}
+    {% if category == "upgrade" %}
+      <div class="modal fade" id="upgradePlanModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content upgrade-modal">
+            <div class="modal-body text-center p-4">
+              <div class="upgrade-icon">
+                <i class="bi bi-lock-fill"></i>
+              </div>
+
+              <h4 class="fw-bold mt-3">Mejora tu plan</h4>
+
+              <p class="text-muted">
+                {{ msg }}
+              </p>
+
+              <div class="d-flex justify-content-center gap-2 mt-4">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                  Cancelar
+                </button>
+
+                <a href="/empresa/planes" class="btn btn-primary">
+                  Ver planes
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        document.addEventListener("DOMContentLoaded", function(){
+          const modal = new bootstrap.Modal(document.getElementById("upgradePlanModal"));
+          modal.show();
+        });
+      </script>
+    {% endif %}
+  {% endfor %}
+{% endwith %}
+
+{% if session.get("upgrade_message") %}
+  <div class="modal fade" id="upgradePlanModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content upgrade-modal">
+        <div class="modal-body text-center p-4">
+          <div class="upgrade-icon">
+            <i class="bi bi-lock-fill"></i>
+          </div>
+
+          <h4 class="fw-bold mt-3">Mejora tu plan</h4>
+
+          <p class="text-muted">
+            {{ session.pop("upgrade_message") }}
+          </p>
+
+          <div class="d-flex justify-content-center gap-2 mt-4">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              Cancelar
+            </button>
+
+            <a href="/empresa/planes" class="btn btn-primary">
+              Ver planes
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function(){
+      const modalEl = document.getElementById("upgradePlanModal");
+      if(modalEl){
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+      }
+    });
+  </script>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  const html = document.documentElement;
+  const toolsPanel = document.getElementById('toolsPanel');
+  const toolsOverlay = document.getElementById('toolsOverlay');
+  const openToolsBtn = document.getElementById('openToolsBtn');
+  const closeToolsBtn = document.getElementById('closeToolsBtn');
+  const themeOptions = document.querySelectorAll('.theme-option');
+
+  function applyTheme(theme){
+    html.setAttribute('data-theme', theme);
+    localStorage.setItem('app-theme', theme);
+
+    themeOptions.forEach(option => {
+      option.classList.toggle('active', option.dataset.themeOption === theme);
+    });
+  }
+
+  function loadTheme(){
+    const savedTheme = localStorage.getItem('app-theme') || 'light';
+    applyTheme(savedTheme);
+  }
+
+  function openToolsPanel(){
+    toolsPanel.classList.add('show');
+    toolsOverlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeToolsPanel(){
+    toolsPanel.classList.remove('show');
+    toolsOverlay.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
+  if(openToolsBtn){
+    openToolsBtn.addEventListener('click', openToolsPanel);
+  }
+
+  if(closeToolsBtn){
+    closeToolsBtn.addEventListener('click', closeToolsPanel);
+  }
+
+  if(toolsOverlay){
+    toolsOverlay.addEventListener('click', closeToolsPanel);
+  }
+
+  themeOptions.forEach(option => {
+    option.addEventListener('click', () => {
+      applyTheme(option.dataset.themeOption);
+    });
+  });
+
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape'){
+      closeToolsPanel();
+    }
+  });
+
+  loadTheme();
+</script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

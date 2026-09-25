@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Personalización{% endblock %}
+
+{% block content %}
+
+<div class="page-card">
+  <h2 class="mb-3">
+    <i class="bi bi-palette me-2"></i>Personalización
+  </h2>
+
+  <p class="mb-4">
+    Elige el color principal del sistema para esta empresa.
+    Este color será visible para todos los usuarios de la empresa.
+  </p>
+
+  <form method="POST">
+    <label class="form-label fw-bold">Color principal</label>
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <input 
+        type="color" 
+        name="color" 
+        value="{{ color }}" 
+        class="form-control form-control-color"
+        style="width:80px;height:50px;"
+      >
+
+      <input 
+        type="text" 
+        value="{{ color }}" 
+        class="form-control"
+        readonly
+      >
+    </div>
+
+    <button class="btn btn-success">
+      <i class="bi bi-check-circle me-1"></i>
+      Guardar color
+    </button>
+  </form>
+</div>
+
+{% endblock %}

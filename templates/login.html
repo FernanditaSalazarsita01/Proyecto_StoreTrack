@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Login | Store Track</title>
+
+<style>
+:root{
+    --primary:#7da6c9;
+    --primary-light:#9fbdd8;
+    --primary-dark:#5f84a3;
+
+    --bg:#e9eef3;
+    --card:rgba(17,24,39,.75);
+
+    --text:#ffffff;
+    --muted:#cbd5e1;
+
+    --border:rgba(255,255,255,.10);
+    --shadow:0 25px 60px rgba(0,0,0,.25);
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    overflow:hidden;
+
+    background:
+    radial-gradient(circle at top left, rgba(125,166,201,.35), transparent 35%),
+    radial-gradient(circle at bottom right, rgba(159,189,216,.35), transparent 35%),
+    linear-gradient(135deg,#dfe7ef,#edf2f7);
+}
+
+/* EFECTOS DIFUMINADOS */
+
+.blob{
+    position:absolute;
+    width:450px;
+    height:450px;
+    border-radius:50%;
+    filter:blur(90px);
+    opacity:.5;
+}
+
+.blob1{
+    background:#7da6c9;
+    top:-120px;
+    left:-120px;
+}
+
+.blob2{
+    background:#9fbdd8;
+    bottom:-150px;
+    right:-120px;
+}
+
+/* CONTENEDOR */
+
+.container{
+    width:min(950px,92%);
+    position:relative;
+    z-index:2;
+}
+
+.card{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    border-radius:28px;
+    overflow:hidden;
+    background:rgba(255,255,255,.10);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.15);
+    box-shadow:var(--shadow);
+}
+
+/* IZQUIERDA */
+
+.left{
+    padding:50px;
+    background:rgba(15,23,42,.80);
+}
+
+.title{
+    font-size:32px;
+    font-weight:bold;
+    margin-bottom:10px;
+    color:var(--text);
+}
+
+.subtitle{
+    color:var(--muted);
+    margin-bottom:30px;
+    line-height:1.5;
+}
+
+/* MENSAJES */
+
+.msg{
+    margin-bottom:18px;
+    padding:14px;
+    border-radius:12px;
+    background:rgba(248,113,113,.15);
+    border:1px solid rgba(248,113,113,.25);
+    color:#fecaca;
+    font-size:14px;
+}
+
+/* INPUTS */
+
+.field{
+    margin-bottom:18px;
+}
+
+.field label{
+    display:block;
+    margin-bottom:8px;
+    font-size:14px;
+    color:#e2e8f0;
+}
+
+.input{
+    position:relative;
+}
+
+.input input{
+    width:100%;
+    padding:15px 15px 15px 18px;
+    border:none;
+    outline:none;
+    border-radius:16px;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.08);
+    color:white;
+    font-size:15px;
+    transition:.2s;
+}
+
+.input input::placeholder{
+    color:#94a3b8;
+}
+
+.input input:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 4px rgba(125,166,201,.15);
+}
+
+/* BOTÓN */
+
+button{
+    width:100%;
+    padding:15px;
+    margin-top:10px;
+    border:none;
+    border-radius:16px;
+    background:linear-gradient(135deg,var(--primary),var(--primary-light));
+    color:white;
+    font-weight:bold;
+    font-size:15px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+button:hover{
+    transform:translateY(-2px);
+    box-shadow:0 12px 30px rgba(125,166,201,.35);
+}
+
+/* LINKS */
+
+.links{
+    margin-top:20px;
+    font-size:14px;
+    color:var(--muted);
+}
+
+.links p{
+    margin-top:12px;
+}
+
+.links a{
+    color:var(--primary-light);
+    text-decoration:none;
+    font-weight:600;
+}
+
+.links a:hover{
+    text-decoration:underline;
+}
+
+/* NOTA DEVELOPER */
+
+.dev-note{
+    margin-top:20px;
+    padding:12px 14px;
+    border-radius:14px;
+    background:rgba(125,166,201,.10);
+    border:1px solid rgba(125,166,201,.25);
+    color:#dbeafe;
+    font-size:13px;
+    line-height:1.5;
+}
+
+/* DERECHA */
+
+.right{
+    position:relative;
+    padding:50px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+
+    background:
+    radial-gradient(circle at top left, rgba(125,166,201,.35), transparent 35%),
+    linear-gradient(135deg, rgba(96,125,139,.92), rgba(71,85,105,.95));
+}
+
+.badge{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    width:max-content;
+    padding:10px 16px;
+    border-radius:999px;
+    background:rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.15);
+    margin-bottom:25px;
+    color:white;
+    font-size:14px;
+}
+
+.dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:#dbeafe;
+}
+
+.right h2{
+    font-size:38px;
+    margin-bottom:18px;
+    color:white;
+}
+
+.right p{
+    line-height:1.8;
+    color:#e2e8f0;
+    max-width:360px;
+}
+
+/* MINI CARDS */
+
+.stats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-top:35px;
+}
+
+.mini{
+    padding:18px;
+    border-radius:18px;
+    background:rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.15);
+}
+
+.mini b{
+    display:block;
+    margin-bottom:8px;
+    font-size:18px;
+    color:white;
+}
+
+.mini span{
+    font-size:13px;
+    color:#e2e8f0;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:850px){
+
+    body{
+        overflow:auto;
+        padding:30px 0;
+    }
+
+    .card{
+        grid-template-columns:1fr;
+    }
+
+    .right{
+        order:-1;
+    }
+
+    .left,
+    .right{
+        padding:35px;
+    }
+
+    .right h2{
+        font-size:30px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+
+<div class="container">
+
+    <div class="card">
+
+        <!-- LOGIN -->
+        <div class="left">
+
+            <div class="title">
+                Iniciar sesión
+            </div>
+
+            <div class="subtitle">
+                Accede de forma segura a tu empresa y administra tu información.
+            </div>
+
+            {% if message %}
+            <div class="msg">
+                {{ message }}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="/login">
+
+                <div class="field">
+                    <label for="company">Empresa</label>
+
+                    <div class="input">
+                        <input
+                            id="company"
+                            type="text"
+                            name="company"
+                            placeholder="Nombre de la empresa"
+                            autocomplete="organization"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="email">Correo</label>
+
+                    <div class="input">
+                        <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            placeholder="correo@empresa.com"
+                            autocomplete="email"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="password">Contraseña</label>
+
+                    <div class="input">
+                        <input
+                            id="password"
+                            type="password"
+                            name="password"
+                            placeholder="********"
+                            autocomplete="current-password"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <button type="submit">
+                    ENTRAR
+                </button>
+
+            </form>
+
+            <div class="links">
+
+                <p>
+                    <a href="/forgot-password">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </p>
+
+                <p>
+                    ¿No tienes empresa?
+                    <a href="/register-company">
+                        Registrar empresa
+                    </a>
+                </p>
+
+            </div>
+
+            <div class="dev-note">
+                <strong>Acceso Developer:</strong>
+                ingresa con la empresa interna configurada para desarrollo y tu usuario con rol developer.
+            </div>
+
+        </div>
+
+        <!-- LADO DERECHO -->
+        <div class="right">
+
+            <div class="badge">
+                <div class="dot"></div>
+                Acceso protegido
+            </div>
+
+            <h2>
+                Bienvenido
+            </h2>
+
+            <p>
+                Plataforma empresarial moderna y segura para administrar la información,
+                accesos y operaciones de cada empresa de forma independiente.
+            </p>
+
+            <div class="stats">
+
+                <div class="mini">
+                    <b>Seguro</b>
+                    <span>
+                        Protección y control de acceso.
+                    </span>
+                </div>
+
+                <div class="mini">
+                    <b>Multiempresa</b>
+                    <span>
+                        Información separada por compañía.
+                    </span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

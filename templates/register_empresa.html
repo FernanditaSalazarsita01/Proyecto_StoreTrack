@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Registro Empresa</title>
+
+<style>
+
+body{
+    font-family:Arial;
+    background:#020617;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.card{
+    width:420px;
+    background:#111827;
+    padding:40px;
+    border-radius:20px;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:10px;
+}
+
+button{
+    width:100%;
+    margin-top:15px;
+    padding:12px;
+    border:none;
+    background:#3b82f6;
+    color:white;
+    font-weight:bold;
+    border-radius:10px;
+}
+
+.msg{
+    color:#f87171;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h1>Registrar Empresa</h1>
+
+{% if message %}
+<p class="msg">{{ message }}</p>
+{% endif %}
+
+<form method="POST">
+
+<input type="text" name="company" placeholder="Nombre empresa" required>
+<input type="text" name="name" placeholder="Nombre administrador" required>
+<input type="email" name="email" placeholder="Correo admin" required>
+<input type="password" name="password" placeholder="Contraseña" required>
+
+<button type="submit">CREAR EMPRESA</button>
+
+</form>
+
+</div>
+
+</body>
+</html>

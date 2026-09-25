@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Panel de usuario</h1>
+
+<p>Usuario: {{ session.user_name }}</p>
+<p>Empresa: {{ session.company_name }}</p>
+{% endblock %}
