@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}STORE TRACK | Copias de seguridad{% endblock %}
+
+{% block extra_css %}
+<style>
+  .table-card{
+    background:#fff;
+    border:1px solid var(--border);
+    box-shadow:var(--panel-shadow);
+    border-radius:12px;
+    overflow:hidden;
+  }
+
+  .table.store{
+    border-collapse:separate !important;
+    border-spacing:0 !important;
+    margin:0 !important;
+    width:100%;
+  }
+
+  .table.store thead th{
+    background:#0f3c4c;
+    color:#fff;
+    font-weight:700;
+    font-size:12px;
+    padding:10px 12px;
+    border:0 !important;
+    white-space:nowrap;
+  }
+
+  .table.store tbody td{
+    background:#fff;
+    font-size:12px;
+    padding:10px 12px;
+    border-top:1px solid #e6eaee !important;
+    color:#3b4b55;
+    vertical-align:middle;
+  }
+
+  .table.store tbody tr:hover td{
+    background:#f6f8fa;
+  }
+
+  .th-sort{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .th-sort i{
+    font-size:10px;
+    opacity:.9;
+  }
+
+  .actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+  }
+
+  .iconbtn{
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    border:1px solid #e6eaee;
+    background:#fff;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    color:#2f3b46;
+    text-decoration:none;
+    padding:0;
+  }
+
+  .iconbtn:hover{
+    background:#f2f4f6;
+  }
+
+  .iconbtn.primary{
+    color:#2c78c6;
+  }
+
+  .iconbtn.danger{
+    color:#c0392b;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Copias de seguridad</h2>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% if backups and backups|length > 0 %}
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="table store align-middle">
+          <thead>
+            <tr>
+              <th><span class="th-sort">Fecha de envío <i class="bi bi-caret-down-fill"></i></span></th>
+              <th><span class="th-sort">Total productos <i class="bi bi-caret-down-fill"></i></span></th>
+              <th><span class="th-sort">ID <i class="bi bi-caret-down-fill"></i></span></th>
+              <th class="text-end" style="width:140px;">
+                <span class="th-sort">Ajustes <i class="bi bi-caret-down-fill"></i></span>
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for b in backups %}
+            <tr>
+              <td>{{ b.get("created_at") }}</td>
+              <td>{{ b.get("count", 0) }}</td>
+              <td style="max-width:260px; word-break:break-all;">{{ b._id }}</td>
+
+              <td>
+                <div class="actions">
+                  <a class="iconbtn primary"
+                     href="/backups/{{ b._id }}"
+                     onclick="return openAdminModal(event, this.href, 'GET');"
+                     title="Ver copia">
+                    <i class="bi bi-eye"></i>
+                  </a>
+
+                  <form method="POST"
+                        action="/backups/{{ b._id }}/delete"
+                        class="m-0"
+                        onsubmit="return openAdminModal(event, this.action, 'POST', this);">
+                    <button class="iconbtn danger" type="submit" title="Eliminar">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <div class="alert alert-warning">
+      Aún no hay copias de seguridad.
+    </div>
+  {% endif %}
+
+  <!-- MODAL ADMIN VERIFY -->
+  <div class="modal fade" id="adminVerifyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title">Confirmar acción de administrador</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="mb-2 text-muted" style="font-size:13px;">
+            Para continuar, ingresa las credenciales de administrador.
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Correo</label>
+            <input id="adminEmail" type="email" class="form-control" autocomplete="username">
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Contraseña</label>
+            <input id="adminPassword" type="password" class="form-control" autocomplete="current-password">
+          </div>
+
+          <div id="adminVerifyMsg" class="alert d-none mt-3 mb-0" role="alert"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button id="adminVerifyBtn" type="button" class="btn btn-primary btn-sm" onclick="submitAdminVerify()">
+            Confirmar
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let _pendingAction = { url: null, method: "GET", form: null };
+
+  function openAdminModal(event, url, method = "GET", form = null) {
+    event.preventDefault();
+
+    _pendingAction = { url, method, form };
+
+    document.getElementById("adminEmail").value = "";
+    document.getElementById("adminPassword").value = "";
+
+    const msg = document.getElementById("adminVerifyMsg");
+    msg.className = "alert d-none mt-3 mb-0";
+    msg.innerText = "";
+
+    const modal = new bootstrap.Modal(document.getElementById("adminVerifyModal"));
+    modal.show();
+
+    return false;
+  }
+
+  async function submitAdminVerify() {
+    const btn = document.getElementById("adminVerifyBtn");
+    btn.disabled = true;
+
+    const email = (document.getElementById("adminEmail").value || "").trim().toLowerCase();
+    const password = document.getElementById("adminPassword").value || "";
+
+    const msg = document.getElementById("adminVerifyMsg");
+    msg.className = "alert d-none mt-3 mb-0";
+    msg.innerText = "";
+
+    try {
+      const resp = await fetch("/admin/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await resp.json().catch(() => ({}));
+
+      if (!resp.ok || !data.ok) {
+        msg.className = "alert alert-danger mt-3 mb-0";
+        msg.innerText = data.msg || "Credenciales incorrectas";
+        btn.disabled = false;
+        return;
+      }
+
+      const modalEl = document.getElementById("adminVerifyModal");
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+
+      if (_pendingAction.method === "GET") {
+        window.location.href = _pendingAction.url;
+        return;
+      }
+
+      if (_pendingAction.form) {
+        _pendingAction.form.submit();
+      } else {
+        const f = document.createElement("form");
+        f.method = "POST";
+        f.action = _pendingAction.url;
+        document.body.appendChild(f);
+        f.submit();
+      }
+
+    } catch (e) {
+      msg.className = "alert alert-warning mt-3 mb-0";
+      msg.innerText = "Error inesperado al verificar admin.";
+      btn.disabled = false;
+    }
+  }
+</script>
+{% endblock %}
