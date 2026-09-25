@@ -23,7 +23,12 @@ from routes.business_intelligence_routes import business_intelligence_bp
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"
+app.secret_key = os.getenv("SECRET_KEY") or os.urandom(32)
+app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax")
+if os.getenv("FLASK_ENV") == "production":
+    if not os.getenv("SECRET_KEY"):
+        raise RuntimeError("Configura SECRET_KEY antes de iniciar en producción")
+    app.config["SESSION_COOKIE_SECURE"] = True
 
 ext.init_mongo()
 db = ext.db
@@ -56,7 +61,7 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
 
-        if "user_id" not in session:
+        if not valid_session():
             return redirect(url_for("login"))
 
         return f(*args, **kwargs)
@@ -68,7 +73,7 @@ def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
 
-        if "user_id" not in session:
+        if not valid_session():
             return redirect(url_for("login"))
 
         if session.get("role") != "admin_empresa":
@@ -83,7 +88,7 @@ def developer_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
 
-        if "user_id" not in session:
+        if not valid_session():
             return redirect(url_for("login"))
 
         if session.get("role") != "developer":
@@ -92,6 +97,27 @@ def developer_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
+
+def valid_session():
+    """Revalidar usuario y empresa para revocar sesiones desactivadas."""
+    user_id = session.get("user_id")
+    company_id = session.get("company_id")
+    if not user_id or not company_id:
+        return False
+    try:
+        user = db["users"].find_one({"_id": ObjectId(user_id), "company_id": company_id})
+        company = db["companies"].find_one({"_id": ObjectId(company_id)})
+    except (ValueError, TypeError):
+        session.clear()
+        return False
+    if not user or not company or user.get("active", True) is False or company.get("active", True) is False:
+        session.clear()
+        return False
+    if user.get("role") != session.get("role"):
+        session.clear()
+        return False
+    return True
 
 
 # =========================
@@ -153,6 +179,9 @@ def register_company():
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
 
+        if not company_name or not admin_name or not email or len(password) < 8:
+            return render_template("register_empresa.html", message="Completa los datos y usa una contraseña de al menos 8 caracteres"), 400
+
         existing_company = db["companies"].find_one({"name": company_name})
 
         if existing_company:
@@ -183,6 +212,7 @@ def register_company():
             "email": email,
             "password": generate_password_hash(password),
             "role": "admin_empresa",
+            "active": True,
             "created_at": datetime.utcnow()
         }
 
@@ -206,6 +236,9 @@ def login():
         if not company_doc:
             return render_template("login.html", message="Empresa no encontrada")
 
+        if company_doc.get("active", True) is False:
+            return render_template("login.html", message="Empresa inactiva")
+
         user = db["users"].find_one({
             "company_id": str(company_doc["_id"]),
             "email": email
@@ -214,9 +247,13 @@ def login():
         if not user:
             return render_template("login.html", message="Usuario no encontrado")
 
+        if user.get("active", True) is False:
+            return render_template("login.html", message="Usuario inactivo")
+
         if not check_password_hash(user["password"], password):
             return render_template("login.html", message="Contraseña incorrecta")
 
+        session.clear()
         session["user_id"] = str(user["_id"])
         session["company_id"] = str(company_doc["_id"])
         session["company_name"] = company_doc.get("name", "")
